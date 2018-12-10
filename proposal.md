@@ -86,8 +86,6 @@ The following schematic shows the proposed structure of a cross-network payments
 In this system, Alice subscribes to a DFSP which is in the same scheme as Mojaloop Implementation 1. She wants to make a payment to Bob, who subscribes to a DFSP on a different network (connected to Implementation 2.) The Mojaloop protocol means that, in the normal run of things, it would not be possible to transfer money between these systems. This proposal discusses how this could be done.
 
 ![schematic of a cross-network solution](https://raw.github.com/mojaloop/cross-network/master/images/cip-network.svg?sanitize=true)
-<img src="https://raw.github.com/mojaloop/cross-network/master/images/cip-network.svg?sanitize=true">
-
 
 Figure 1: schematic of a cross-network solution
 
