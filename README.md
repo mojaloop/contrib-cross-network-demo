@@ -6,15 +6,15 @@ When this work has matured it will be migrated into the core project.
 
 ## Links
 
- * [Proposal](./blob/master/proposal.md)
- * [POC Part 1 Report](./blob/master/part1.md) published 29 January 2019
- * [POC Part 1 Presentation](./blob/master/part1.pdf) published 30 January 2019
+ * [Proposal](./proposal.md)
+ * [POC Part 1 Report](./part1.md) published 29 January 2019
+ * [POC Part 1 Presentation](./part1.pdf) published 30 January 2019
 
 ## Output
 
 The following output may be incorporated into the core project. Proposed changes to the API as a result of this work are captured in this proposal:
 
-  * [api-changes](./blob/master/api-changes.md)
+  * [api-changes](./api-changes.md)
 
 
 ### New Components
