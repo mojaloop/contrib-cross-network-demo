@@ -8,6 +8,7 @@ When this work has matured it will be migrated into the core project.
 
  * [Proposal](./blob/master/proposal.md)
  * [POC Part 1 Report](./blob/master/part1.md) published 29 January 2019
+ * [POC Part 1 Presentation](./blob/master/part1.pdf) published 30 January 2019
 
 ## Output
 
