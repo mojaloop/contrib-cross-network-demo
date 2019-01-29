@@ -250,7 +250,7 @@ Notes
 
 ### Cross-Network Provider
 
-The Super Remit system runs an interledger connector which holds an account with each of the Moja hubs it is peered with (Blue Moja and Red Moja) as shown in Figure 1. 
+The Super Remit system runs an interledger connector which holds an account with each of the Moja hubs it is peered with (Blue Moja and Red Moja) as shown in Figure 2. 
 
 It is run in connector mode and, for now, no middleware is loaded for either account. 
 
@@ -271,40 +271,40 @@ The client is used to post to the necessary endpoints on the destination Moja hu
 ### Transfer flow
 
 1.  Transfer request is received on the /transfers endpoint for the Blue Moja plugin
-  1.  An Ilp-prepare packet is constructed from the transfer request according to the mappings in Table 1 below.
-  1.  Returns 202 and closes http connection to Blue Moja
-1.  The prepare packet is forwarded onto the connector for routing. Note that this starts a chain of promises indicated by the solid black lines.
-  1.  Set payerFsp = moja.superremit (own address) in request body
-  1.  Set payeeFsp = moja.tz.red.tzs.pink (fspiop-final-destination) in request body
-  1.  Set request header fspiop-source = moja.superremit (own address)
-  1.  Set request header fspiop-final-destination = fspiop-final-destination
-1.  Red Moja is identified as the next hop by the connector
-1.  The Red Moja plugin is told to sendData. 
-    1.  The ilp-prepare packet is turned into an http request and send to Red Moja
-    1.  A listener is set up that will resolve a promise when a fulfill is received from the put transfers/{transferId} endpoint on the Red Moja plugin.
+    - An Ilp-prepare packet is constructed from the transfer request according to the mappings in Table 1 below.
+    - Returns 202 and closes http connection to Blue Moja.
+1. The prepare packet is forwarded onto the connector for routing. Note that this starts a chain of promises indicated by the solid black lines.
+    - Set payerFsp = moja.superremit (own address) in request body
+    - Set payeeFsp = moja.tz.red.tzs.pink (fspiop-final-destination) in request body
+    - Set request header fspiop-source = moja.superremit (own address)
+    - Set request header fspiop-final-destination = fspiop-final-destination
+    - Red Moja is identified as the next hop by the connector
+1.  The Red Moja plugin is told to `sendData`. 
+1.  The ilp-prepare packet is turned into an http request and send to Red Moja
+    - A listener is set up that will resolve a promise when a fulfill is received from the `PUT transfers/{transferId}` endpoint on the Red Moja plugin.
 1.  Transfer fulfill request is received on Red Moja's plugin
-    1.  Maps fulfillment to ilp fulfillment according to the mappings in Table 2 below.
-    1.  Emits event so that listener for transfer resolves with the constructed Ilp fulfill packet and the headers received.
-    1.  Sends 202 to Red Moja and closes http connection
+    - Maps fulfillment to ilp fulfillment according to the mappings in Table 2 below.
+    - Emits event so that listener for transfer resolves with the constructed Ilp fulfill packet and the headers received.
+    - Sends 202 to Red Moja and closes http connection
 1.  The promise chain initiated by the Blue Moja plugin resolves
 1.  The Blue Moja plugin now has the necessary fulfill and headers to create a put request on the Blue Moja hub.
-    1.  Set request header fspiop-source = moja.superremit (own address)
-    1.  Set request header fspiop-final-destination = fspiop-final-destination
+    - Set request header fspiop-source = moja.superremit (own address)
+    - Set request header fspiop-final-destination = fspiop-final-destination
 
 <table>
   <tr>
-   <td>
-Ilp Prepare field
-   </td>
-   <td>Transfer request body
-   </td>
-   <td>Transfer request header
-   </td>
+   <th>
+ILP Prepare Field
+   </th>
+   <th>Transfer Request Body
+   </th>
+   <th>Transfer Request Header
+   </th>
   </tr>
   <tr>
    <td>amount
    </td>
-   <td>Amount.amount (need to double check conversion)
+   <td>Amount.amount <br/><em><strong>TODO</strong>: need to double check conversion</em>
    </td>
    <td>
    </td>
@@ -336,7 +336,7 @@ Ilp Prepare field
   <tr>
    <td>data
    </td>
-   <td>Transfer request body for the moment
+   <td>Transfer Request body <br/><em><strong>TODO:</strong>: May change pending possible API changes.</em>
    </td>
    <td>
    </td>
@@ -347,11 +347,11 @@ _**Table 1**: Mapping between a transfer and an ILP Prepare packet_
 
 <table>
   <tr>
-   <td>
-IlpFulfill field
-   </td>
-   <td>Fulfill request body
-   </td>
+   <th>
+Ilp Fulfill Field
+   </th>
+   <th>Fulfill Request Body
+   </th>
   </tr>
   <tr>
    <td>fulfillment
@@ -362,7 +362,7 @@ IlpFulfill field
   <tr>
    <td>data
    </td>
-   <td>Fulfill request body for the moment
+   <td>Fulfill Request body.<br/><em><strong>TODO:</strong>: May change pending possible API changes.</em>
    </td>
   </tr>
 </table>

@@ -53,7 +53,7 @@ Both scenarios require that multiple transfers are performed via the same or mul
 3. How intermediary DFSP(s) receiving the first (and possibly later) transfer(s) determine(s) where to send the next transfer
 4. How all parties to a transaction share sufficient data to satisfy their regulatory obligations
 
-This document explores proposed answers to these questions by examining the lifecycle of a transaction from discovery of the receiving DFSP to final delivery of the last transfer to that DFSP.
+This document explores proposed answers to these questions by examining the life cycle of a transaction from discovery of the receiving DFSP to final delivery of the last transfer to that DFSP.
 
 Given that not all transactions in the first scenario entail a currency exchange, the document proposes a new term &quot;cross-network&quot; which describes any transaction that consists of transfers on more than one Mojaloop-based implementation.
 
@@ -129,13 +129,13 @@ It can therefore be seen that this arrangement leaves the settlement accounts in
 
 ## 5. Addresses and Identifiers
 
-As will be discussed in detail in later sections describing the transaction lifecycle, the ability to direct messages to entities in the ecosystem that are not directly linked to the sender is a crucial element of a cross-network solution.
+As will be discussed in detail in later sections describing the transaction life cycle, the ability to direct messages to entities in the ecosystem that are not directly linked to the sender is a crucial element of a cross-network solution.
 
-In a single network the line between **identification** and **addressing** is blurred as all participants are connected through the hub: therefore simply having the identity of the counter-party is sufficient to address messages to that counterparty.
+In a single network the line between **identification** and **addressing** is blurred as all participants are connected through the hub: therefore simply having the identity of the counter-party is sufficient to address messages to that counter-party.
 
 In a multi-network ecosystem, it is necessary to define an address space that accommodates this more complex topology.
 
-Internetworking multiple Mojaloop-based networks results in a topology not unlike the Internet therefore a neutral addressing scheme akin to IP is proposed. This is the same logic that was applied in the design of the ILP addressing scheme and we therefore propose to use a slightly modified version of this scheme for Mojaloop (henceforth called a **Moja Address** ).
+Inter-networking multiple Mojaloop-based networks results in a topology not unlike the Internet therefore a neutral addressing scheme akin to IP is proposed. This is the same logic that was applied in the design of the ILP addressing scheme and we therefore propose to use a slightly modified version of this scheme for Mojaloop (henceforth called a **Moja Address** ).
 
 The value of a hierarchical scheme such as those used in IP and ILP is that addresses can represent individual entities but can also be used to represent a block of addresses within the space. This makes for efficient exchange, storage and evaluation of routing information.
 
@@ -180,7 +180,7 @@ The ILP-based Moja Address scheme offers a number of benefits over existing sche
 
 The IBAN and PAN schemes, already in use between banks and card network participants, share a common property with ILP addresses in that they are hierarchical. For example, all PANs starting with a 4 are from the VISA network, further digits indicate specific network participants and ultimately the specific account holder.
 
-Moja addresses however offer a significant advantage over PANs and IBANs which opens up numerous powerful possibilities that can only be implanted with PANs and IBANS using complex work-arounds and hacks. That advantage is that they are variable in length and support a wider character set (case sensitive, alphanumeric and a select set of other ASCII characters).
+Moja addresses however offer a significant advantage over PANs and IBANs which opens up numerous powerful possibilities that can only be implanted with PANs and IBANs using complex work-arounds and hacks. That advantage is that they are variable in length and support a wider character set (case sensitive, alphanumeric and a select set of other ASCII characters).
 
 Both the PAN and IBAN schemes were invented at a time when messaging space was severely limited and processing capabilities constrained; therefore, the address schemes needed to be too.
 
@@ -206,7 +206,7 @@ Assuming that a sender has resolved the address of the receiving DFSP they wish 
 
 The API currently defines a mechanism by which the intended recipient of an API call is identified by the HTTP header: **FSPIOP-Destination**
 
-While not explicitly documented as such, there is no reason why this value couldn&#39;t be the address of a DFSP in another network, however this does raise some issues regarding how, and by which system, the messages are routed in the sender&#39;s network.
+While not explicitly documented as such, there is no reason why this value couldn't be the address of a DFSP in another network, however this does raise some issues regarding how, and by which system, the messages are routed in the sender's network.
 
 There are two possible options; one where the hub is responsible for determining the CNP in the sending network to forward the API call to and the other where this is explicitly set by the sender.
 
@@ -268,27 +268,27 @@ When a DFSP receives a message with this header it should identify the position 
 
 If the DFSP&#39;s address is the last address in the list, it is the intended final recipient and should process the message.
 
-## 7. Transaction Lifecycle
+## 7. Transaction Life-cycle
 
 The combination of using Moja Addresses as **FspIds** and also the ability to specify an out-of-network recipient in the **FSPIOP-Final-Destination** or **FSPIOP-Route** header means that the existing API can be used to execute transactions across multiple networks.
 
-The following sections describe a general transaction lifecycle aligned with the use cases in the Mojaloop API specification and call-out the changes required and questions that arise in performing a cross-network transaction.
+The following sections describe a general transaction life-cycle aligned with the use cases in the Mojaloop API specification and call-out the changes required and questions that arise in performing a cross-network transaction.
 
 Further discussion is required to identify specifics of how certain new data will be transported in the API messages and how these will be secured, using either the existing API security mechanisms or an extension of these.
 
 ### 7.1. Identifying, addressing and querying the destination party
 
-The first stage in the transfer of funds is the identification of the counterparty in the transaction: that is, the party who is to be credited (the payee) and their DFSP.
+The first stage in the transfer of funds is the identification of the counter-party in the transaction: that is, the party who is to be credited (the payee) and their DFSP.
 
 This stage is described in Section 5.2 of the Open API specification. In summary, the sending DFSP uses an identifier of the payee to query the local ALS for the **FspId** of the payee&#39;s DFSP. The specification also allows for the hub to query the payee DFSP on the payer DFSP&#39;s behalf for the details of the payee and return these, along with the **FspId** , in the response.
 
-In other words, this process is actually an abstraction of two functions; **discovering the identity and address of the payee DFSP** followed by **querying that DFSP for the payee details**. This must be considered in discussing the remainder of the transaction lifecycle.
+In other words, this process is actually an abstraction of two functions; **discovering the identity and address of the payee DFSP** followed by **querying that DFSP for the payee details**. This must be considered in discussing the remainder of the transaction life-cycle.
 
-In order for a cross-network solution to work, the directories used by the ALS, to facilitate the discovery of the payee DFSP, will need to be modified to include information about counterparties who are represented by DFSPs in other networks. These modifications divide into two different categories, as described below.
+In order for a cross-network solution to work, the directories used by the ALS, to facilitate the discovery of the payee DFSP, will need to be modified to include information about counter-parties who are represented by DFSPs in other networks. These modifications divide into two different categories, as described below.
 
 #### 7.1.1. Globally unique payee identifiers
 
-There are some ways of identifying a counterparty which are reliably globally unique: for instance, an MSISDN.
+There are some ways of identifying a counter-party which are reliably globally unique: for instance, an MSISDN.
 
 In these cases, it is sufficient for the originating party&#39;s DFSP to request information from the ALS in the form used at present. The expectation is that the oracle for MSISDNs and, by extension, oracles for other globally unique identifiers, will contain information for all subscribers who are associated with a DFSP which identifies the DFSP to which they belong.
 
@@ -300,7 +300,7 @@ This form of search does not require any modifications to the existing interface
 
 #### 7.1.2. Non-unique payee identifiers
 
-Other ways of identifying a counterparty are not reliably unique across all possible networks. An example is a national ID number, which might be duplicated in another country&#39;s ID system. In this case, additional information must be supplied to disambiguate the ID number: to say, for instance, that this is a national ID belonging to the Kenyan or the Peruvian national ID scheme.
+Other ways of identifying a counter-party are not reliably unique across all possible networks. An example is a national ID number, which might be duplicated in another country&#39;s ID system. In this case, additional information must be supplied to disambiguate the ID number: to say, for instance, that this is a national ID belonging to the Kenyan or the Peruvian national ID scheme.
 
 Disambiguation will require the inclusion of an additional piece of information to the submission to the ALS. One such additional piece of information which already exists is the Party Sub ID or Type (defined in Section 6.3.27 of the Open API Specification.) However, the addressing examples given in Section 4.2 of the Open API Specification suggest that this will not be sufficient. In one of the examples given there, an employee of a business is identified by giving the employee&#39;s name as a Sub ID, while the business name is given as the main identifier. Since a business name will not be globally unique, the Sub ID will not be available to define the context in which the non-unique identifier is to be evaluated. It will therefore be necessary to use an additional identifier (for instance, &quot;IdentifierContext&quot;) to specify the context in which a non-unique identifier is to be evaluated.
 
@@ -443,7 +443,7 @@ As such, this discussion is based around the assumptions that currency conversio
 
 The assumption is that a cross-currency payment in a single network will consist of, at least, two distinct transfers. A transfer in the sending currency to an FXP, and a subsequent transfer from the FXP to the recipient DFSP.
 
-This also assumes that the Mojaloop system will be capable of servicing accounts in multiple currencies. It is important to note, however, that this doesn&#39;t mean the Mojaloop system must support cross-currency transfers as this adds significant complexity to the system. Rather, the clearing accounts in the system can be partitioned by currency and any single transfer will have the same sending and receiving currency.
+This also assumes that the Mojaloop system will be capable of servicing accounts in multiple currencies. It is important to note, however, that this doesn't mean the Mojaloop system must support cross-currency transfers as this adds significant complexity to the system. Rather, the clearing accounts in the system can be partitioned by currency and any single transfer will have the same sending and receiving currency.
 
 A network participant (DFSP) may have multiple clearing accounts in different currencies.
 
