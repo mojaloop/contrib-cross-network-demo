@@ -88,9 +88,11 @@ For the POC, static routes are configured on the three systems maintaining routi
 
 ## Flow
 
-![alt_text](images/architecture.png "image_tooltip")
+![alt_text](images/architecture.png "architecture")
 
-Our in goal in Part 1 was for Alice to send a payment to Bob.
+**Figure 1**: The Mojaloop architecture
+
+Our in goal in Part 1 was for Alice to send a payment to Bob per the following flow.
 
 ### Prerequisites
 
@@ -248,11 +250,9 @@ Notes
 
 ### Cross-Network Provider
 
-**TODO:** put check in `PUT /transfers` endpoint to do nothing if **fspiop-destination** == **fspiop-final-destination** == **moja.superremit**.
-
 The Super Remit system runs an interledger connector which holds an account with each of the Moja hubs it is peered with (Blue Moja and Red Moja) as shown in Figure 1. 
 
-It is run in connector mode and for now,  no middleware is loaded for either account. 
+It is run in connector mode and, for now, no middleware is loaded for either account. 
 
 On startup, an account with a plugin that communicates using HTTP/REST is created for each Moja Hub. These plugins facilitate peer-to-peer communication by hosting an http server (express) and client (axios). The server hosts the following endpoints:
 
@@ -266,7 +266,7 @@ The client is used to post to the necessary endpoints on the destination Moja hu
 
 ![alt_text](images/cnp.png "image_tooltip")
 
-Figure 1: The Super Remit cross-network provider which has an account with Blue and Red Moja. Each of these accounts has an HTTP/REST plugin (MojaHttp plugin) which facilitates with communication with the appropriate Moja Hub.
+**Figure 2**: The Super Remit cross-network provider which has an account with Blue and Red Moja. Each of these accounts has an HTTP/REST plugin (MojaHttp plugin) which facilitates with communication with the appropriate Moja Hub.
 
 ### Transfer flow
 
@@ -342,7 +342,8 @@ Ilp Prepare field
    </td>
   </tr>
 </table>
-_Table 1: Mapping between a transfer and an ILP Prepare packet_
+
+_**Table 1**: Mapping between a transfer and an ILP Prepare packet_
 
 <table>
   <tr>
@@ -365,9 +366,8 @@ IlpFulfill field
    </td>
   </tr>
 </table>
-_Table 3: Mapping between a fulfill and an ILP Fulfill packet_
 
-
+_**Table 2**: Mapping between a fulfill and an ILP Fulfill packet_
 
 # Appendix
 
@@ -431,6 +431,7 @@ _Table 3: Mapping between a fulfill and an ILP Fulfill packet_
    </td>
   </tr>
 </table>
+
 _**Table 1**: Summary of base endpoints_
 
 <table>
@@ -490,6 +491,7 @@ _**Table 1**: Summary of base endpoints_
    </td>
   </tr>
 </table>
+
 _**Table 2**: ilp-connector config_
 
 <table>
@@ -540,6 +542,7 @@ _**Table 2**: ilp-connector config_
    </td>
   </tr>
 </table>
+
 _**Table 3**: interop-switch-js config_
 
 <table>
@@ -568,6 +571,7 @@ _**Table 3**: interop-switch-js config_
    </td>
   </tr>
 </table>
+
 _**Table 4**: central-ledger config_
 
 <table>
@@ -596,6 +600,7 @@ _**Table 4**: central-ledger config_
    </td>
   </tr>
 </table>
+
 _**Table 5**:ml-api-adapter config_
 
 <table>
@@ -632,6 +637,7 @@ _**Table 5**:ml-api-adapter config_
    </td>
   </tr>
 </table>
+
 _**Table 6**: mock-dfsp config_
 
 **Populating with test data:**
@@ -740,6 +746,7 @@ These can be found at [https://github.com/mojaloop/central-ledger/tree/feature/c
    </td>
   </tr>
 </table>
+
 _**Table 7**: Variables to update in env.sh_
 
 ### Local Development Environment (Work In Progress)
@@ -801,6 +808,7 @@ _**Table 7**: Variables to update in env.sh_
    </td>
   </tr>
 </table>
+
 _**Table 8**: Environment variables for the Super Remit CNP_
 
 
@@ -1006,6 +1014,7 @@ _**Table 8**: Environment variables for the Super Remit CNP_
    </td>
   </tr>
 </table>
+
 _**Table 9**: Environment variables for running 2 Moja Hubs on the same machine._
 
 **Populating with test data:**
