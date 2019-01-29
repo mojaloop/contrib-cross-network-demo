@@ -48,8 +48,8 @@ The concrete changes proposed are:
 
 With these changes the `/transaction` API is now a direct mapping from the ILPv4 packet:
 
-| ILP Prepare | `/transaction`               |
-|=============|==============================|
+| ILP Prepare | Mojaloop `/transaction` API  |
+|-------------|------------------------------|
 | destination | `headers.FSPIOP-Destination` |
 | amount      | `transfer.amount`            |
 | expiry      | `transfer.expiry`            |
