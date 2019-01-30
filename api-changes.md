@@ -44,7 +44,7 @@ The concrete changes proposed are:
 
   1. Remove `ilpPacket` from the `transfer` object.
   1. Add the `transaction` object as a property of the `transfer` object (previously the payload of the embedded packet).
-  1. Use `FSPIOP-Destination` header to hold the address of payee
+  1. Use `FSPIOP-Destination` header to hold the address of payee and remove the length restriction on the data type.
 
 With these changes the `/transaction` API is now a direct mapping from the ILPv4 packet:
 
