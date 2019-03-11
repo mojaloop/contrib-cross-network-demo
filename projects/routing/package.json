@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "boom": "^7.3.0",
     "hapi": "^18.1.0",
     "hapi-openapi": "^1.2.0",
     "ilp-routing": "^20.0.1-beta.0",
