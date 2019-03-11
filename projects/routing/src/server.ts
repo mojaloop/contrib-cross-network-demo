@@ -19,9 +19,21 @@
  * Matt de Haast <matt@coil.com>
  --------------
  ******/
+import { createApp } from './app'
+import { RouteManager, Router } from 'ilp-routing'
+import { create } from 'domain';
+import { Server } from 'http';
 
-'use strict'
 
-const Server = require('./server')
-
-module.exports = Server.initialize()
+export function createServer(port: number): {server: Server, routeManager: RouteManager, router: Router} {
+    const router = new Router()
+    const routeManager = new RouteManager(router)
+    const server = createApp(routeManager, router).listen(3000, () => {
+        console.log('Server running on port 3000')
+    })
+    return {
+        server,
+        routeManager,
+        router
+    }
+}

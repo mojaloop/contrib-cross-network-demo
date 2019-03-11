@@ -12,19 +12,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "boom": "^7.3.0",
-    "hapi": "^18.1.0",
-    "hapi-openapi": "^1.2.0",
-    "ilp-routing": "^20.0.1-beta.0",
-    "rc": "^1.2.8"
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "ilp-routing": "^20.0.1-beta.0"
   },
   "devDependencies": {
-    "eslint": "^5.15.1",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "mocha": "^6.0.2"
+    "@types/chai": "^4.1.7",
+    "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.11.0",
+    "axios": "^0.18.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.13.1",
+    "typescript": "^3.3.3333"
   }
 }
