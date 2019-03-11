@@ -3,6 +3,7 @@ module.exports = {
     browser: true,
     commonjs: true,
     es6: true,
+    mocha: true
   },
   extends: ['eslint:recommended', 'standard'],
   globals: {
@@ -13,5 +14,5 @@ module.exports = {
     ecmaVersion: 2018,
   },
   rules: {
-  },
+  }
 };
