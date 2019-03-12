@@ -41,5 +41,8 @@ export function createApp(routeManager: RouteManager, router: Router) {
   app.post('/routes', (req: Request, res: Response) => peerRoutesController.store(req,res, routeManager))
   app.delete('/routes', (req: Request, res: Response) => peerRoutesController.destroy(req,res, routeManager))
 
+
+  app.get("/health", (req: Request, res: Response) =>  res.sendStatus(200))
+
   return app
 }
