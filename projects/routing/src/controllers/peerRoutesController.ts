@@ -20,9 +20,9 @@ export let store = (req: Request, res: Response, routeManager: RouteManager) => 
 }
 
 export let destroy = (req: Request, res: Response, routeManager: RouteManager) => {
-  const peerId = req.params.id
+  const {peer, prefix} = req.body
 
-  routeManager.removePeer(peerId)
+  routeManager.removeRoute(peer, prefix)
 
   res.sendStatus(202)
 }
