@@ -16,12 +16,33 @@
  their names indented and be marked with a '-'. Email address can be added
  optionally within square brackets <email>.
  * Gates Foundation
- * Matt de Haast <matt@coil.com>
+ *
  --------------
  ******/
 
-'use strict'
+import express = require('express')
+import {Request, Response} from 'express'
+import * as nextHopeController from './controllers/nextHopController'
+import * as peerController from './controllers/peerController'
+import * as peerRoutesController from './controllers/peerRoutesController'
+import { RouteManager, Router } from 'ilp-routing';
 
-const Server = require('./server')
+export function createApp(routeManager: RouteManager, router: Router) {
+  const app = express()
+  app.use(express.json())
+  app.use(express.urlencoded())  
+  
+  app.get("/nexthop/:address", (req: Request, res: Response) => nextHopeController.index(req,res, router) )
+  
+  app.get('/peers/:id', (req: Request, res: Response) => peerController.show(req,res, routeManager))
+  app.post('/peers', (req: Request, res: Response) => peerController.store(req,res, routeManager))
+  app.delete('/peers/:id', (req: Request, res: Response) => peerController.destroy(req,res, routeManager))
 
-module.exports = Server.initialize()
+  app.post('/routes', (req: Request, res: Response) => peerRoutesController.store(req,res, routeManager))
+  app.delete('/routes', (req: Request, res: Response) => peerRoutesController.destroy(req,res, routeManager))
+
+
+  app.get("/health", (req: Request, res: Response) =>  res.sendStatus(200))
+
+  return app
+}

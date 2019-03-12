@@ -1,5 +1,4 @@
 /*****
- * @file This registers all handlers for the central-ledger API
  License
  --------------
  Copyright © 2017 Bill & Melinda Gates Foundation
@@ -20,8 +19,20 @@
  * Matt de Haast <matt@coil.com>
  --------------
  ******/
-const RC = require('rc')('ALS', require('../../config/default.json'))
+import { createApp } from './app'
+import { RouteManager, Router } from 'ilp-routing'
+import { Server } from 'http';
 
-module.exports = {
-  PORT: RC.PORT
+
+export function createServer(port: number): {server: Server, routeManager: RouteManager, router: Router} {
+    const router = new Router()
+    const routeManager = new RouteManager(router)
+    const server = createApp(routeManager, router).listen(port, () => {
+        console.log(`Server running on port ${port}`)
+    })
+    return {
+        server,
+        routeManager,
+        router
+    }
 }
