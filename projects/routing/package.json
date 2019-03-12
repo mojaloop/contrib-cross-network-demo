@@ -48,7 +48,8 @@
       "src/**/*"
     ],
     "exclude": [
-      "test"
+      "test",
+      "src/index.ts"
     ],
     "reporter": [
       "lcov",
