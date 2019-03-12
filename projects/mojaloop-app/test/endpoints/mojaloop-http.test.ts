@@ -62,7 +62,7 @@ describe('HTTP Mojaloop Endpoint', function () {
         transferState: 'FULFILLED'
       }
       const transferPut: MojaloopHttpRequest = {
-        objectId: 1,
+        objectId: '1',
         headers: {'fspiop-final-destination': 'alice'},
         body: putMessage
       }
@@ -130,7 +130,7 @@ describe('HTTP Mojaloop Endpoint', function () {
         }
       }
       const quotePut: MojaloopHttpRequest = {
-        objectId: 1,
+        objectId: '1',
         headers: {'fspiop-final-destination': 'alice'},
         body: putMessage
       }

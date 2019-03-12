@@ -8,6 +8,7 @@ import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http';
 import { TransfersPostRequest, TransfersIDPutResponse } from '../../src/types/mojaloop-models/models';
 import { MojaloopHttpRequest, isTransferPost, isTransferPut } from '../../src/types/mojaloop-packets';
+import { AxiosResponse } from 'axios';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)

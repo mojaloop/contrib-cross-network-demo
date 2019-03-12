@@ -1,7 +1,6 @@
 import { AxiosResponse } from 'axios'
 import { QuotesPostRequest, QuotesIDPutResponse, TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from './mojaloop-models/models'
 
-
 export type MojaloopMessage = QuotesIDPutResponse | QuotesPostRequest | TransfersIDPutResponse | TransfersPostRequest | ErrorInformationObject
 
 export type MojaloopHttpRequest = {
