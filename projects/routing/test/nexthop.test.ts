@@ -2,7 +2,6 @@ import 'mocha'
 import { expect } from 'chai'
 import axios from 'axios'
 import { createServer } from '../src/server'
-import { doesNotReject, fail } from 'assert';
 
 describe('nexthop endpoints', function() { 
   let server: any
@@ -14,7 +13,6 @@ describe('nexthop endpoints', function() {
   afterEach(function() {
     server.server.close()
   })
-
 
   it('can get peer for nexthop', async function() {
     server.routeManager.addPeer('bob', 'child')

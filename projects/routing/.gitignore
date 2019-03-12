@@ -62,5 +62,5 @@ typings/
 
 \.idea/
 .vscode
-build
+lib
 .DS_Store

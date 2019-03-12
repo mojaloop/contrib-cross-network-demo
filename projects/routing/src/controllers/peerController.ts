@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express'
+import { Request, Response } from 'express'
 import { RouteManager } from 'ilp-routing';
 
 export let store = (req: Request, res: Response, routeManager: RouteManager) => {

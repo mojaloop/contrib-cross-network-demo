@@ -21,15 +21,14 @@
  ******/
 import { createApp } from './app'
 import { RouteManager, Router } from 'ilp-routing'
-import { create } from 'domain';
 import { Server } from 'http';
 
 
 export function createServer(port: number): {server: Server, routeManager: RouteManager, router: Router} {
     const router = new Router()
     const routeManager = new RouteManager(router)
-    const server = createApp(routeManager, router).listen(3000, () => {
-        console.log('Server running on port 3000')
+    const server = createApp(routeManager, router).listen(port, () => {
+        console.log(`Server running on port ${port}`)
     })
     return {
         server,
