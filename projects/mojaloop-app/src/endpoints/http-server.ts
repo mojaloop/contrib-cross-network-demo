@@ -1,7 +1,7 @@
 import * as hapi from 'hapi'
 import pathToRegexp from 'path-to-regexp'
 import { MojaloopHttpEndpoint } from './mojaloop-http'
-import { MojaloopHttpRequest, MessageType } from '../types/mojaloop-packets'
+import { MojaloopHttpRequest } from '../types/mojaloop-packets'
 
 export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoint> {
 
@@ -37,14 +37,7 @@ export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoin
       throw new Error(`No endpoint found for path=${request.path}`)
     }
 
-    const mojaloopRequest: MojaloopHttpRequest = {
-      type: MessageType.transfer,
-      method: 'post',
-      headers: request.headers,
-      data: request
-    }
-
-    const handlerPromise = endpoint.handleIncomingRequest(mojaloopRequest)
+    // TODO: create mojaloop post request
 
     reply.response().code(202)
   }

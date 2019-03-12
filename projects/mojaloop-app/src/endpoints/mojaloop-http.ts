@@ -1,6 +1,7 @@
 import { Endpoint, RequestHandler, HttpEndpointOpts } from '@interledger/rafiki'
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import { MojaloopHttpRequest, MojaloopHttpReply, MessageType } from '../types/mojaloop-packets'
+import axios, { AxiosInstance } from 'axios'
+import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPost, isTransferPut, isQuotePost, isQuotePut } from '../types/mojaloop-packets'
+import { QuotesPostRequest, QuotesIDPutResponse, TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from '../types/mojaloop-models/models'
 
 export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, MojaloopHttpReply> {
   private client: AxiosInstance
@@ -16,18 +17,19 @@ export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, Mojal
   async sendOutgoingRequest (request: MojaloopHttpRequest, sentCallback?: () => void): Promise<MojaloopHttpReply> {
 
     let url: string
-    if (request.type === MessageType.transfer && request.method === 'post') {
+    let method: string
+    if (isTransferPost(request.body)) {
       url = '/transfers'
-    } else if (request.type === MessageType.transfer && request.method === 'put') {
+      method = 'post'
+    } else if (isTransferPut(request.body)) {
       url = `/transfers/${request.objectId}`
-    } else if (request.type === MessageType.quote && request.method === 'post') {
+      method = 'put'
+    } else if (isQuotePost(request.body)) {
       url = '/quotes'
-    } else if (request.type === MessageType.quote && request.method === 'put') {
+      method = 'post'
+    } else if (isQuotePut(request.body)) {
       url = `/quotes/${request.objectId}`
-    } else if (request.type === MessageType.transferError) {
-      url = `/transfers/${request.objectId}/error`
-    } else if (request.type === MessageType.quoteError) {
-      url = `/quotes/${request.objectId}/error`
+      method = 'put'
     } else {
       throw new Error('Unknown message type')
     }
@@ -35,9 +37,9 @@ export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, Mojal
     return this.client.request({
       url,
       baseURL: this.baseUrl,
-      method: request.method,
+      method,
       headers: request.headers,
-      data: request.data
+      data: request.body
     })
   }
 
