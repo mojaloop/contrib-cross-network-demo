@@ -3,9 +3,9 @@ import axios from 'axios'
 import * as sinon from 'sinon'
 import * as Chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop-http'
-import { MojaloopHttpRequest, isTransferPost } from '../../src/types/mojaloop-packets';
-import { TransfersPostRequest, TransfersIDPutResponse, QuotesPostRequest, QuotesIDPutResponse } from '../../src/types/mojaloop-models/models';
+import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http'
+import { MojaloopHttpRequest } from '../../src/types/mojaloop-packets'
+import { TransfersPostRequest, TransfersIDPutResponse, QuotesPostRequest, QuotesIDPutResponse } from '../../src/types/mojaloop-models/models'
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)

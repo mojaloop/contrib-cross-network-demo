@@ -1,7 +1,6 @@
 import { Endpoint, RequestHandler, HttpEndpointOpts } from '@interledger/rafiki'
 import axios, { AxiosInstance } from 'axios'
-import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPost, isTransferPut, isQuotePost, isQuotePut } from '../types/mojaloop-packets'
-import { QuotesPostRequest, QuotesIDPutResponse, TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from '../types/mojaloop-models/models'
+import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPost, isTransferPut, isQuotePost, isQuotePut } from '../../types/mojaloop-packets'
 
 export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, MojaloopHttpReply> {
   private client: AxiosInstance

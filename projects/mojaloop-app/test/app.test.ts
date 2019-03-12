@@ -5,7 +5,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { App } from '../src/app'
 import axios from 'axios'
 import { PeerInfo } from '../src/types/peer';
-import { MojaloopHttpEndpoint } from '../src/endpoints/mojaloop-http';
+import { MojaloopHttpEndpoint } from '../src/endpoints/mojaloop/mojaloop-http';
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
 

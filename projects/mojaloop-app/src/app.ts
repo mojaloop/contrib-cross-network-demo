@@ -2,8 +2,8 @@ import { pipeline } from '@interledger/rafiki'
 import { Rule, setPipelineReader } from './types/rule'
 import { PeerInfo } from './types/peer'
 import hapi from 'hapi'
-import { MojaloopHttpEndpoint } from './endpoints/mojaloop-http'
-import { MojaloopHttpEndpointManager } from './endpoints/http-server'
+import { MojaloopHttpEndpoint } from './endpoints/mojaloop/mojaloop-http'
+import { MojaloopHttpEndpointManager } from './endpoints/mojaloop/mojaloop-http-server'
 import { MojaloopHttpRequest, MojaloopHttpReply } from './types/mojaloop-packets'
 
 export interface AppOptions {

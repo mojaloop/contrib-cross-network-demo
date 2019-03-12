@@ -5,7 +5,7 @@ import { QuotesPostRequest, QuotesIDPutResponse, TransfersPostRequest, Transfers
 export type MojaloopMessage = QuotesIDPutResponse | QuotesPostRequest | TransfersIDPutResponse | TransfersPostRequest | ErrorInformationObject
 
 export type MojaloopHttpRequest = {
-  objectId?: number
+  objectId?: string
   headers: object
   body: MojaloopMessage
 }
