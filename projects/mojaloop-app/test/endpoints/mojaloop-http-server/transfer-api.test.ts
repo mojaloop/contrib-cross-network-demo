@@ -3,17 +3,17 @@ import { v4 as uuid } from 'uuid'
 import * as sinon from 'sinon'
 import * as Chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { MojaloopHttpEndpointManager } from '../../src/endpoints/mojaloop/mojaloop-http-server'
+import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/mojaloop-http-server'
 import * as hapi from 'hapi'
-import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http';
-import { TransfersPostRequest, TransfersIDPutResponse } from '../../src/types/mojaloop-models/models';
-import { MojaloopHttpRequest, isTransferPost, isTransferPut } from '../../src/types/mojaloop-packets';
+import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http';
+import { TransfersPostRequest, TransfersIDPutResponse } from '../../../src/types/mojaloop-models/models';
+import { MojaloopHttpRequest, isTransferPost, isTransferPut } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
 
-describe('Mojaloop Http Endpoint Manager', function () {
+describe('Mojaloop Http Endpoint Manager Transfer API', function () {
   
   let endpointManager: MojaloopHttpEndpointManager
   let httpServer: hapi.Server

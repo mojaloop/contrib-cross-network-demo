@@ -1,6 +1,7 @@
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from './mojaloop-http'
 import { TransferRoutes } from './routes/transfer-routes'
+import { QuotesRoutes } from './routes/quotes-routes';
 
 export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoint> {
 
@@ -10,7 +11,9 @@ export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoin
     server.method('getEndpoint', this.getEndpoint.bind(this))
 
     const transferRoutes = TransferRoutes
+    const quoteRoutes = QuotesRoutes
     transferRoutes.forEach(route => server.route(route))
+    quoteRoutes.forEach(route => server.route(route))
   }
 
   getEndpoint (peerId: string): MojaloopHttpEndpoint {
