@@ -5,7 +5,7 @@ import * as Chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http'
 import { MojaloopHttpRequest } from '../../src/types/mojaloop-packets'
-import { TransfersPostRequest, TransfersIDPutResponse, QuotesPostRequest, QuotesIDPutResponse } from '../../src/types/mojaloop-models/models'
+import { TransfersPostRequest, TransfersIDPutResponse, QuotesPostRequest, QuotesIDPutResponse, ErrorInformationObject } from '../../src/types/mojaloop-models/models'
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -144,6 +144,90 @@ describe('HTTP Mojaloop Endpoint', function () {
       assert.deepEqual(axiosStub.args[0][0].data, putMessage)
       assert.deepEqual(axiosStub.args[0][0].headers, {'fspiop-final-destination': 'alice'})
     })
+  })
+
+  it('sends get quote request', async function () {
+    const getQuoteMessage: MojaloopHttpRequest = {
+      objectId: '1',
+      objectType: 'quote',
+      headers: {'fspiop-source': 'alice'},
+      body: {}
+    }
+
+    axiosStub = sinon.stub(axios, 'request').resolves()
+
+    await mojaloopHttpEndpoint.sendOutgoingRequest(getQuoteMessage)
+    assert.equal(axiosStub.args[0][0].url, '/quotes/1')
+    assert.equal(axiosStub.args[0][0].baseURL, 'http://localhost:1080/alice')
+    assert.equal(axiosStub.args[0][0].method, 'get')
+    assert.deepEqual(axiosStub.args[0][0].data, {})
+    assert.deepEqual(axiosStub.args[0][0].headers, {'fspiop-source': 'alice'})
+  })
+
+  it('sends get transfer request', async function () {
+    const getQuoteMessage: MojaloopHttpRequest = {
+      objectId: '1',
+      objectType: 'transfer',
+      headers: {'fspiop-source': 'alice'},
+      body: {}
+    }
+
+    axiosStub = sinon.stub(axios, 'request').resolves()
+
+    await mojaloopHttpEndpoint.sendOutgoingRequest(getQuoteMessage)
+    assert.equal(axiosStub.args[0][0].url, '/transfers/1')
+    assert.equal(axiosStub.args[0][0].baseURL, 'http://localhost:1080/alice')
+    assert.equal(axiosStub.args[0][0].method, 'get')
+    assert.deepEqual(axiosStub.args[0][0].data, {})
+    assert.deepEqual(axiosStub.args[0][0].headers, {'fspiop-source': 'alice'})
+  })
+
+  it('sends put transfer error request', async function () {
+    const errorInfoObject: ErrorInformationObject = {
+      errorInformation: {
+        errorCode: '1',
+        errorDescription: 'test'
+      }
+    }
+    const putQuoteError: MojaloopHttpRequest = {
+      objectId: '1',
+      objectType: 'transfer',
+      headers: {'fspiop-source': 'alice'},
+      body: errorInfoObject
+    }
+
+    axiosStub = sinon.stub(axios, 'request').resolves()
+
+    await mojaloopHttpEndpoint.sendOutgoingRequest(putQuoteError)
+    assert.equal(axiosStub.args[0][0].url, '/transfers/1/error')
+    assert.equal(axiosStub.args[0][0].baseURL, 'http://localhost:1080/alice')
+    assert.equal(axiosStub.args[0][0].method, 'put')
+    assert.deepEqual(axiosStub.args[0][0].data, errorInfoObject)
+    assert.deepEqual(axiosStub.args[0][0].headers, {'fspiop-source': 'alice'})
+  })
+
+  it('sends put quote error request', async function () {
+    const errorInfoObject: ErrorInformationObject = {
+      errorInformation: {
+        errorCode: '2',
+        errorDescription: 'test'
+      }
+    }
+    const putQuoteError: MojaloopHttpRequest = {
+      objectId: '2',
+      objectType: 'quote',
+      headers: {'fspiop-source': 'alice'},
+      body: errorInfoObject
+    }
+
+    axiosStub = sinon.stub(axios, 'request').resolves()
+
+    await mojaloopHttpEndpoint.sendOutgoingRequest(putQuoteError)
+    assert.equal(axiosStub.args[0][0].url, '/quotes/2/error')
+    assert.equal(axiosStub.args[0][0].baseURL, 'http://localhost:1080/alice')
+    assert.equal(axiosStub.args[0][0].method, 'put')
+    assert.deepEqual(axiosStub.args[0][0].data, errorInfoObject)
+    assert.deepEqual(axiosStub.args[0][0].headers, {'fspiop-source': 'alice'})
   })
 
 })
