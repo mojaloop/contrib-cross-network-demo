@@ -1,11 +1,11 @@
 import * as hapi from 'hapi'
-import { MojaloopHttpRequest, isTransferPost, MojaloopMessage, isTransferPut } from '../../../types/mojaloop-packets'
+import { MojaloopHttpRequest, isTransferPostMessage, MojaloopMessage, isTransferPutMessage } from '../../../types/mojaloop-packets'
 import { TransfersPostRequest, TransfersIDPutResponse } from '../../../types/mojaloop-models/models'
 import { MojaloopHttpEndpoint } from '../mojaloop-http'
 
 export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
-    if (!isTransferPost(request.payload as MojaloopMessage)) {
+    if (!isTransferPostMessage(request.payload as MojaloopMessage)) {
       throw new Error('Could not turn payload into transfer post request.')
     }
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
@@ -25,7 +25,7 @@ export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
 
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
-    if (!isTransferPut(request.payload as MojaloopMessage)) {
+    if (!isTransferPutMessage(request.payload as MojaloopMessage)) {
       throw new Error('Could not turn payload into transfer put request.')
     }
 

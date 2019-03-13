@@ -7,7 +7,7 @@ import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/moj
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http';
 import { TransfersPostRequest, TransfersIDPutResponse } from '../../../src/types/mojaloop-models/models';
-import { MojaloopHttpRequest, isTransferPost, isTransferPut } from '../../../src/types/mojaloop-packets';
+import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
 
 Chai.use(chaiAsPromised)
@@ -85,7 +85,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
       })
   
       assert.equal(res.statusCode, 202)
-      assert.isTrue(isTransferPost(endpointHttpRequest!.body))
+      assert.isTrue(isTransferPostMessage(endpointHttpRequest!.body))
     })
   
     it('returns 500 if there is no endpoint for the participant', async function () {
@@ -145,7 +145,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
       })
   
       assert.equal(res.statusCode, 202)
-      assert.isTrue(isTransferPut(endpointHttpRequest!.body))
+      assert.isTrue(isTransferPutMessage(endpointHttpRequest!.body))
       assert.equal(endpointHttpRequest!.objectId, id)
     })
   })

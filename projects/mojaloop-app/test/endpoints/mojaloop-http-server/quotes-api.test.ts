@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/mojaloop-http-server'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http'
-import { MojaloopHttpRequest, isQuotePost, isQuotePut } from '../../../src/types/mojaloop-packets'
+import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage } from '../../../src/types/mojaloop-packets'
 import { AxiosResponse } from 'axios'
 import { QuotesPostRequest, QuotesIDPutResponse } from '../../../src/types/mojaloop-models/models';
 
@@ -106,7 +106,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       })
   
       assert.equal(res.statusCode, 202)
-      assert.isTrue(isQuotePost(endpointHttpRequest!.body))
+      assert.isTrue(isQuotePostMessage(endpointHttpRequest!.body))
     })
 
     it('returns 500 if there is no endpoint for the participant', async function () {
@@ -156,7 +156,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       })
 
       assert.equal(res.statusCode, 202)
-      assert.isTrue(isQuotePut(endpointHttpRequest!.body))
+      assert.isTrue(isQuotePutMessage(endpointHttpRequest!.body))
       assert.equal(endpointHttpRequest!.objectId, quoteId)
     })
 

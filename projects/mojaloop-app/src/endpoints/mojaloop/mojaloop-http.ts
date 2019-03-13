@@ -1,6 +1,6 @@
 import { Endpoint, RequestHandler, HttpEndpointOpts } from '@interledger/rafiki'
 import axios, { AxiosInstance } from 'axios'
-import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPost, isTransferPut, isQuotePost, isQuotePut } from '../../types/mojaloop-packets'
+import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPostMessage, isTransferPutMessage, isQuotePostMessage, isQuotePutMessage } from '../../types/mojaloop-packets'
 
 export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, MojaloopHttpReply> {
   private client: AxiosInstance
@@ -17,16 +17,16 @@ export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, Mojal
 
     let url: string
     let method: string
-    if (isTransferPost(request.body)) {
+    if (isTransferPostMessage(request.body)) {
       url = '/transfers'
       method = 'post'
-    } else if (isTransferPut(request.body)) {
+    } else if (isTransferPutMessage(request.body)) {
       url = `/transfers/${request.objectId}`
       method = 'put'
-    } else if (isQuotePost(request.body)) {
+    } else if (isQuotePostMessage(request.body)) {
       url = '/quotes'
       method = 'post'
-    } else if (isQuotePut(request.body)) {
+    } else if (isQuotePutMessage(request.body)) {
       url = `/quotes/${request.objectId}`
       method = 'put'
     } else {
