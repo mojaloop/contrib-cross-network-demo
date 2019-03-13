@@ -13,6 +13,7 @@ export type MojaloopHttpRequest = {
 export type MojaloopHttpReply = AxiosResponse
 
 export function isError (message: MojaloopMessage): message is ErrorInformationObject {
+  // tslint:disable-next-line: strict-type-predicates
   return (message as ErrorInformationObject).errorInformation !== undefined
 }
 
@@ -21,6 +22,7 @@ export function isGet (message: MojaloopMessage): message is GetRequest {
 }
 
 export function isQuotePostMessage (message: MojaloopMessage): message is QuotesPostRequest {
+  // tslint:disable-next-line: strict-type-predicates
   return (message as QuotesPostRequest).quoteId !== undefined
 }
 
@@ -29,6 +31,7 @@ export function isQuotePutErrorRequest (request: MojaloopHttpRequest): boolean {
 }
 
 export function isQuotePutMessage (message: MojaloopMessage): message is QuotesIDPutResponse {
+  // tslint:disable-next-line: strict-type-predicates
   return (message as QuotesIDPutResponse).transferAmount !== undefined
 }
 
@@ -37,6 +40,7 @@ export function isQuoteGetRequest (request: MojaloopHttpRequest): boolean {
 }
 
 export function isTransferPostMessage (message: MojaloopMessage): message is TransfersPostRequest {
+  // tslint:disable-next-line: strict-type-predicates
   return (message as TransfersPostRequest).transferId !== undefined
 }
 
@@ -45,6 +49,7 @@ export function isTransferPutErrorRequest (request: MojaloopHttpRequest): boolea
 }
 
 export function isTransferPutMessage (message: MojaloopMessage): message is TransfersIDPutResponse {
+  // tslint:disable-next-line: strict-type-predicates
   return (message as TransfersIDPutResponse).transferState !== undefined
 }
 
