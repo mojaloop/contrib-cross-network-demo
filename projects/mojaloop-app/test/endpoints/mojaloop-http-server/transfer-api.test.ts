@@ -6,8 +6,8 @@ import chaiAsPromised from 'chai-as-promised'
 import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/mojaloop-http-server'
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http';
-import { TransfersPostRequest, TransfersIDPutResponse } from '../../../src/types/mojaloop-models/models';
-import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage, isTransferGetRequest } from '../../../src/types/mojaloop-packets';
+import { TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from '../../../src/types/mojaloop-models/models'
+import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage, isTransferGetRequest, isTransferPutErrorRequest } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
 
 Chai.use(chaiAsPromised)
@@ -37,6 +37,13 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
 
   const putMessage: TransfersIDPutResponse = {
     transferState: 'COMMITTED'
+  }
+
+  const errorMessage: ErrorInformationObject = {
+    errorInformation: {
+      errorCode: 'test',
+      errorDescription: 'test'
+    }
   }
 
   beforeEach(function () {
@@ -193,6 +200,58 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
         method: 'get',
         url: '/alice/transfers/' + uuid(),
         payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 500)
+    })
+  })
+
+  describe('put transfer error', function () {
+    it('returns 202 on successful put', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/transfers/${uuid()}/error`,
+        payload: errorMessage,
+        headers
+      })
+
+      assert.equal(res.statusCode, 202)
+    })
+
+    it('gives the endpoint a TransferPutErrorRequest', async function () {
+      let endpointHttpRequest: MojaloopHttpRequest
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
+        endpointHttpRequest = request
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice', endpoint)
+      const id = uuid()
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/transfers/${id}/error`,
+        payload: errorMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      assert.isTrue(isTransferPutErrorRequest(endpointHttpRequest!))
+      assert.deepEqual(endpointHttpRequest!.body, errorMessage)
+      assert.deepEqual(endpointHttpRequest!.objectId, id)
+      assert.deepEqual(endpointHttpRequest!.objectType, 'transfer')
+    })
+
+    it('returns 500 if there is no endpoint for the participant', async function () {
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/transfers/${uuid()}/error`,
+        payload: errorMessage,
         headers
       })
   

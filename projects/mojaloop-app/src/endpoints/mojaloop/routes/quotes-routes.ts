@@ -1,6 +1,16 @@
 import * as hapi from 'hapi'
 import * as QuotesController from '../controllers/quotes-controller'
-import { PartyValidation, MoneyValidation, TransactionTypeValidation, GeoCodeValidation, ExtensionListValidation, ExpirationValidation, IlpPacketValidation, ConditionValidation } from './validation'
+import * as QuotesErrorController from '../controllers/quotes-error-controller'
+import {
+  PartyValidation,
+  MoneyValidation,
+  TransactionTypeValidation,
+  GeoCodeValidation,
+  ExtensionListValidation,
+  ExpirationValidation,
+  IlpPacketValidation,
+  ConditionValidation,
+  ErrorInformationValidation } from './validation'
 const BaseJoi = require('joi-currency-code')(require('joi'))
 const Extension = require('joi-date-extensions')
 const Joi = BaseJoi.extend(Extension)
@@ -114,6 +124,39 @@ export const QuotesRoutes: hapi.ServerRoute[] = [
           id: Joi.string().required().description('Id of quote'),
           peerId: Joi.string().required()
         }
+      }
+    }
+  },
+  {
+    method: 'PUT',
+    path: '/{peerId}/quotes/{id}/error',
+    handler: QuotesErrorController.update,
+    options: {
+      tags,
+      description: 'Put a quote error',
+      payload: {
+        failAction: 'error'
+      },
+      validate: {
+        headers: Joi.object({
+          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
+          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
+          'x-forwarded-for': Joi.string().optional(),
+          'fspiop-source': Joi.string().required(),
+          'fspiop-destination': Joi.string().optional(),
+          'fspiop-encryption': Joi.string().optional(),
+          'fspiop-signature': Joi.string().optional(),
+          'fspiop-uri': Joi.string().optional(),
+          'fspiop-http-method': Joi.string().optional()
+        }).unknown(false).options({ stripUnknown: true }),
+        params: {
+          id: Joi.string().required().description('Id of quote'),
+          peerId: Joi.string().required()
+        },
+        payload: {
+          errorInformation: Joi.object().keys(ErrorInformationValidation).required()
+        },
+        failAction: (request, h, err) => { throw err }
       }
     }
   }

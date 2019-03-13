@@ -6,9 +6,9 @@ import chaiAsPromised from 'chai-as-promised'
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/mojaloop-http-server'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http'
-import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage, isQuoteGetRequest } from '../../../src/types/mojaloop-packets'
+import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage, isQuoteGetRequest, isQuotePutErrorRequest } from '../../../src/types/mojaloop-packets'
 import { AxiosResponse } from 'axios'
-import { QuotesPostRequest, QuotesIDPutResponse } from '../../../src/types/mojaloop-models/models';
+import { QuotesPostRequest, QuotesIDPutResponse, ErrorInformationObject } from '../../../src/types/mojaloop-models/models';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -57,6 +57,13 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     transferAmount: {
       amount: '100',
       currency: 'USD'
+    }
+  }
+
+  const errorMessage: ErrorInformationObject = {
+    errorInformation: {
+      errorCode: 'test',
+      errorDescription: 'test'
     }
   }
 
@@ -215,6 +222,59 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
         method: 'get',
         url: '/alice/quotes/' + uuid(),
         payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 500)
+    })
+  })
+
+
+  describe('put transfer error', function () {
+    it('returns 202 on successful put', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/quotes/${uuid()}/error`,
+        payload: errorMessage,
+        headers
+      })
+
+      assert.equal(res.statusCode, 202)
+    })
+
+    it('gives the endpoint a QuotePutErrorRequest', async function () {
+      let endpointHttpRequest: MojaloopHttpRequest
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
+        endpointHttpRequest = request
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice', endpoint)
+      const id = uuid()
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/quotes/${id}/error`,
+        payload: errorMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      assert.isTrue(isQuotePutErrorRequest(endpointHttpRequest!))
+      assert.deepEqual(endpointHttpRequest!.body, errorMessage)
+      assert.deepEqual(endpointHttpRequest!.objectId, id)
+      assert.deepEqual(endpointHttpRequest!.objectType, 'quote')
+    })
+
+    it('returns 500 if there is no endpoint for the participant', async function () {
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/quotes/${uuid()}/error`,
+        payload: errorMessage,
         headers
       })
   

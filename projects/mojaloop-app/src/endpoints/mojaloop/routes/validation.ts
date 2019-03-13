@@ -2,6 +2,10 @@ const BaseJoi = require('joi-currency-code')(require('joi'))
 const Extension = require('joi-date-extensions')
 const Joi = BaseJoi.extend(Extension)
 
+export const ExpirationValidation = Joi.string().optional().regex(/^(?:[1-9]\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(\.\d{3}))(?:Z|[+-][01]\d:[0-5]\d)$/).description('When the transfer expires').label('@ A valid transfer expiry date must be supplied. @')
+export const IlpPacketValidation = Joi.string().required().regex(/^[A-Za-z0-9-_]+[=]{0,2}$/).min(1).max(32768).description('ilp packet').label('@ Supplied ILPPacket fails to match the required format. @')
+export const ConditionValidation = Joi.string().required().trim().max(48).regex(/^[A-Za-z0-9-_]{43}$/).description('Condition of transfer').label('@ A valid transfer condition must be supplied. @')
+
 export const partyIdInfoValidation = {
   partyIdType: Joi.string().required().max(32),
   partyIdentifier: Joi.string().required().max(128).description('Party identifier'),
@@ -58,6 +62,8 @@ export const ExtensionListValidation = {
   })).required().min(1).max(16).description('extension')
 }
 
-export const ExpirationValidation = Joi.string().optional().regex(/^(?:[1-9]\d{3}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1\d|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[1-9]\d(?:0[48]|[2468][048]|[13579][26])|(?:[2468][048]|[13579][26])00)-02-29)T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(\.\d{3}))(?:Z|[+-][01]\d:[0-5]\d)$/).description('When the transfer expires').label('@ A valid transfer expiry date must be supplied. @')
-export const IlpPacketValidation = Joi.string().required().regex(/^[A-Za-z0-9-_]+[=]{0,2}$/).min(1).max(32768).description('ilp packet').label('@ Supplied ILPPacket fails to match the required format. @')
-export const ConditionValidation = Joi.string().required().trim().max(48).regex(/^[A-Za-z0-9-_]{43}$/).description('Condition of transfer').label('@ A valid transfer condition must be supplied. @')
+export const ErrorInformationValidation = {
+  errorCode: Joi.string().required().max(128).description('Specific error number.'),
+  errorDescription: Joi.string().required().max(128).description('Error description string.'),
+  extensionList: Joi.object().keys(ExtensionListValidation).optional()
+}
