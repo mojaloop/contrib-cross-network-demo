@@ -1,6 +1,6 @@
 import * as hapi from 'hapi'
 import * as TransfersController from '../controllers/transfers-controller'
-import { ExtensionListValidation, MoneyValidation, IlpPacketValidation, ExpirationValidation, ConditionValidation } from './validation';
+import { ExtensionListValidation, MoneyValidation, IlpPacketValidation, ExpirationValidation, ConditionValidation } from './validation'
 
 const BaseJoi = require('joi-currency-code')(require('joi'))
 const dateExtension = require('joi-date-extensions')
