@@ -38,10 +38,12 @@ export class App {
   }
 
   public async start (): Promise<void> {
+    console.log(`Starting app http server on port=${this.port}`)
     await this.httpServer.start()
   }
 
   public async shutdown (): Promise<void> {
+    console.log('Stopping app http server')
     await this.httpServer.stop()
   }
 
@@ -102,11 +104,11 @@ export class App {
     const handler = this.outgoinRequestHandlers.get(nextHop)
 
     if (!handler) {
-      // logger.error('Handler not found for specified nextHop', { nextHop })
+      console.log('Handler not found for specified nextHop', { nextHop })
       throw new Error(`No handler set for ${nextHop}`)
     }
 
-    // logger.silly('sending outgoing Packet', { destination, nextHop })
+    console.log('sending outgoing Packet', { destination, nextHop })
 
     return handler(request)
   }
