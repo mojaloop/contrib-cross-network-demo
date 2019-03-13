@@ -90,5 +90,31 @@ export const QuotesRoutes: hapi.ServerRoute[] = [
         }
       }
     }
+  },
+  {
+    method: 'GET',
+    path: '/{peerId}/quotes/{id}',
+    handler: QuotesController.show,
+    options: {
+      tags,
+      description: 'Get a quote',
+      validate: {
+        headers: Joi.object({
+          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
+          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
+          'x-forwarded-for': Joi.string().optional(),
+          'fspiop-source': Joi.string().required(),
+          'fspiop-destination': Joi.string().optional(),
+          'fspiop-encryption': Joi.string().optional(),
+          'fspiop-signature': Joi.string().optional(),
+          'fspiop-uri': Joi.string().optional(),
+          'fspiop-http-method': Joi.string().optional()
+        }).unknown(false).options({ stripUnknown: true }),
+        params: {
+          id: Joi.string().required().description('Id of quote'),
+          peerId: Joi.string().required()
+        }
+      }
+    }
   }
 ]

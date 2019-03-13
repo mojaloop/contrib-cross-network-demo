@@ -7,7 +7,7 @@ import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/moj
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http';
 import { TransfersPostRequest, TransfersIDPutResponse } from '../../../src/types/mojaloop-models/models';
-import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage } from '../../../src/types/mojaloop-packets';
+import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage, isTransferGetRequest } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
 
 Chai.use(chaiAsPromised)
@@ -147,6 +147,56 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
       assert.equal(res.statusCode, 202)
       assert.isTrue(isTransferPutMessage(endpointHttpRequest!.body))
       assert.equal(endpointHttpRequest!.objectId, id)
+    })
+  })
+
+  describe('get transfers', function () {
+    it('returns 202 on successful get', async function () {
+      const id = uuid()
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/transfers/' + id,
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+    })
+
+    it('gives the endpoint a MojaloopHttpRequest of type TransferGetRequest', async function () {
+      let endpointHttpRequest: MojaloopHttpRequest
+      const id = uuid()
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
+        endpointHttpRequest = request
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/transfers/' + id,
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      assert.isTrue(isTransferGetRequest(endpointHttpRequest!))
+    })
+
+    it('returns 500 if there is no endpoint for the participant', async function () {
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/transfers/' + uuid(),
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 500)
     })
   })
 })

@@ -37,3 +37,23 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
     return reply.response().code(500) // TODO: Give generic fail message?
   }
 }
+
+export function show (request: hapi.Request, reply: hapi.ResponseToolkit) {
+  try {
+
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const quoteGetRequest: MojaloopHttpRequest = {
+      objectId: request.params.id,
+      objectType: 'quote',
+      headers: request.headers,
+      body: {}
+    }
+
+    // Do nothing with response
+    const endpointResponse = endpoint.handleIncomingRequest(quoteGetRequest)
+
+    return reply.response().code(202)
+  } catch (error) {
+    return reply.response().code(500) // TODO: Give generic fail message?
+  }
+}

@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import * as hapi from 'hapi'
 import { MojaloopHttpEndpointManager } from '../../../src/endpoints/mojaloop/mojaloop-http-server'
 import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-http'
-import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage } from '../../../src/types/mojaloop-packets'
+import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage, isQuoteGetRequest } from '../../../src/types/mojaloop-packets'
 import { AxiosResponse } from 'axios'
 import { QuotesPostRequest, QuotesIDPutResponse } from '../../../src/types/mojaloop-models/models';
 
@@ -168,6 +168,56 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
         headers
       })
 
+      assert.equal(res.statusCode, 500)
+    })
+  })
+
+  describe('get quotes', function () {
+    it('returns 202 on successful get', async function () {
+      const id = uuid()
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/quotes/' + id,
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+    })
+
+    it('gives the endpoint a MojaloopHttpRequest of type TransferGetRequest', async function () {
+      let endpointHttpRequest: MojaloopHttpRequest
+      const id = uuid()
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
+        endpointHttpRequest = request
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/quotes/' + id,
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      assert.isTrue(isQuoteGetRequest(endpointHttpRequest!))
+    })
+
+    it('returns 500 if there is no endpoint for the participant', async function () {
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/quotes/' + uuid(),
+        payload: {},
+        headers
+      })
+  
       assert.equal(res.statusCode, 500)
     })
   })
