@@ -7,7 +7,8 @@ import axios, { AxiosResponse } from 'axios'
 import {v4 as uuid} from 'uuid'
 import { PeerInfo } from '../src/types/peer';
 import { MojaloopHttpEndpoint } from '../src/endpoints/mojaloop/mojaloop-http';
-import { MojaloopHttpRequest } from '../src/types/mojaloop-packets';
+import { MojaloopHttpRequest, MojaloopHttpReply } from '../src/types/mojaloop-packets';
+import { TransfersPostRequest, QuotesPostRequest, TransfersIDPutResponse, QuotesIDPutResponse, ErrorInformationObject } from '../src/types/mojaloop-models/models';
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
 
@@ -22,6 +23,83 @@ describe('Mojaloop CNP App', function () {
     assetCode: 'USD',
     assetScale: 2,
     rules: []
+  }
+
+  const headers = {
+    'fspiop-source': 'moja.bob',
+    'fspiop-address': 'moja.fred',
+    'date': new Date(Date.now()).toUTCString(),
+    'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
+  }
+  const transferId = uuid()
+  const postTransferMessage: TransfersPostRequest = {
+    transferId,
+    payeeFsp: 'fred',
+    payerFsp: 'bob',
+    amount: {
+      amount: '100',
+      currency: 'USD'
+    },
+    condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
+    expiration: '2016-05-24T08:38:08.699-04:00',
+    ilpPacket: 'testpacket'
+  }
+  const postTransferRequest: MojaloopHttpRequest = {
+    headers,
+    body: postTransferMessage
+  }
+
+  const quoteId = uuid()
+  const postQuoteMessage: QuotesPostRequest = {
+    amount: {
+      amount: '100',
+      currency: 'USD'
+    },
+    amountType: 'SEND',
+    payee: {
+      partyIdInfo: {
+        partyIdType: '1',
+        partyIdentifier: '1'
+      }
+    },
+    payer: {
+      partyIdInfo: {
+        partyIdType: '1',
+        partyIdentifier: '1'
+      }
+    },
+    quoteId: quoteId,
+    transactionId: uuid(),
+    transactionType: {
+      initiator: 'Payee',
+      initiatorType: 'test',
+      scenario: 'refund'
+    }
+  }
+  const postQuoteRequest: MojaloopHttpRequest = {
+    headers,
+    body: postQuoteMessage
+  }
+
+  const errorMessage: ErrorInformationObject = {
+    errorInformation: {
+      errorCode: 'test',
+      errorDescription: 'test'
+    }
+  }
+
+  const putTransferErrorRequest: MojaloopHttpRequest = {
+    objectId: transferId,
+    objectType: 'transfer',
+    headers,
+    body: errorMessage
+  }
+
+  const putQuoteErrorRequest: MojaloopHttpRequest = {
+    objectId: quoteId,
+    objectType: 'quote',
+    headers,
+    body: errorMessage
   }
 
   beforeEach(function () {
@@ -67,34 +145,6 @@ describe('Mojaloop CNP App', function () {
   })
 
   describe('sendOutgoingPacket', function () {
-    it('uses prescribed header to get next hop from routing table', async function () {
-      const getTransferRequest: MojaloopHttpRequest = {
-        objectId: '1',
-        objectType: 'transfer',
-        headers: {'address': 'moja.alice'},
-        body: {}
-      }
-      const newApp = new App({ port: 1079, destinationHeader: 'address' })
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
-      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as AxiosResponse)
-      await newApp.addPeer(peerInfo, endpoint)
-
-      // new app set to use address
-      await newApp.sendOutgoingRequest(getTransferRequest)
-      sinon.assert.calledWith(endpointSendStub, getTransferRequest)
-
-      // app set to default to use fspiop-destination
-      await app.addPeer(peerInfo, endpoint)
-
-      try {
-        await app.sendOutgoingRequest(getTransferRequest)
-      } catch (error) {
-        return
-      }
-
-      assert.fail('Did not throw expected error')
-    })
-
     it('throws error if no handler is found for next hop', async function () {
       const getTransferRequest: MojaloopHttpRequest = {
         objectId: '1',
@@ -120,6 +170,203 @@ describe('Mojaloop CNP App', function () {
       }
 
       assert.fail('Did not throw expected error.')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer post requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(postTransferRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote post requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(postQuoteRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote put error requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(putQuoteErrorRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer put error requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(putTransferErrorRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer get requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      const getTransferRequest: MojaloopHttpRequest = {
+        objectId: '1',
+        objectType: 'transfer',
+        headers,
+        body: {}
+      }
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(getTransferRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote get requests', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      const getQuoteRequest: MojaloopHttpRequest = {
+        objectId: '1',
+        objectType: 'quote',
+        headers,
+        body: {}
+      }
+      
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+
+      await app.sendOutgoingRequest(getQuoteRequest)
+
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(0).args[0].headers['fspiop-destination'], 'moja.alice')
+    })
+
+    it('uses headers from transfer post request to update fspiop-source and fspiop-destination headers for transfer put request', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      const putTransferMessage: TransfersIDPutResponse = {
+        transferState: 'COMMITTED'
+      }    
+      const putTransferRequest: MojaloopHttpRequest = {
+        objectId: transferId,
+        headers,
+        body: putTransferMessage
+      }
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+      await endpoint.handleIncomingRequest({
+        headers: {
+          'fspiop-source': 'moja.bob',
+          'fspiop-address': 'moja.fred',
+          'date': new Date(Date.now()).toUTCString(),
+          'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
+        },
+        body: postTransferMessage
+      }) // to make sure that post transfer request is in transferRequestEntryMap
+
+      await app.sendOutgoingRequest(putTransferRequest)
+
+      assert.equal(endpointSendStub.callCount, 2)
+      assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-destination'], 'moja.bob')
+    })
+
+    it('uses headers from quote post request to update fspiop-source and fspiop-destination headers for quote put request', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+      const quotePutMessage: QuotesIDPutResponse = {
+        condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
+        expiration: '2016-05-24T08:38:08.699-04:00',
+        ilpPacket: 'testpacket',
+        transferAmount: {
+          amount: '100',
+          currency: 'USD'
+        }
+      }
+      const putQuoteRequest: MojaloopHttpRequest = {
+        objectId: quoteId,
+        headers,
+        body: quotePutMessage
+      }
+      app.setMojaAddress('moja.cnp')
+      await app.addPeer(peerInfo, endpoint)
+      app.routeManager.addRoute({
+        peer: 'alice',
+        prefix: 'moja.fred',
+        path: []
+      })
+      console.log('post headers', test)
+      await endpoint.handleIncomingRequest({
+        headers: {
+          'fspiop-source': 'moja.bob',
+          'fspiop-address': 'moja.fred',
+          'date': new Date(Date.now()).toUTCString(),
+          'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
+        },
+        body: postQuoteMessage
+      }) // to make sure that post quote request is in quoteRequestEntryMap
+
+      await app.sendOutgoingRequest(putQuoteRequest)
+
+      assert.equal(endpointSendStub.callCount, 2)
+      assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-source'], 'moja.cnp')
+      assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-destination'], 'moja.bob')
     })
   })
 
@@ -152,4 +399,9 @@ describe('Mojaloop CNP App', function () {
     assert.deepEqual(endpointSendArg.body, {})
   })
 
+  it('adds track-requests rule by default', async function () {
+    await app.addPeer(peerInfo)
+
+    assert.include(app.getPeerRules(peerInfo.id).map(rule => rule.constructor.name), 'TrackRequestsRule')
+  })
 })

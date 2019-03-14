@@ -24,7 +24,8 @@ setTimeout(() => {
     // TODO: Clears all transports - we should try to do this in a reversible way
     winston.configure({
       format,
-      transports: new winston.transports.Stream({ stream, format })
+      transports: new winston.transports.Stream({ stream, format }),
+      level: 'debug'
     })
   })
   

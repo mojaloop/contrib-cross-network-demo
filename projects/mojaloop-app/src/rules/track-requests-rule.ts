@@ -1,5 +1,7 @@
 import { Rule, MojaloopRequestHandler } from '../types/rule'
+import { log } from '../winston'
 import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPostMessage, isQuotePostMessage, isQuotePutMessage, isTransferPutMessage, isQuotePutErrorRequest, isTransferPutErrorRequest } from '../types/mojaloop-packets'
+const logger = log.child({ component: 'track-request-rule' })
 
 export type RequestMapEntry = {
   headers: { [k: string]: any }
@@ -22,27 +24,22 @@ export class TrackRequestsRule extends Rule {
   constructor ({ transferRequestEntryMap, transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap }: TrackRequestRuleOpts) {
     super({
       processIncoming: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
-
+        const requestEntry = {
+          headers: request.headers,
+          sentPut: false
+        }
         if (isTransferPostMessage(request.body)) {
-          this._transferRequestEntryMap.set(request.body.transferId, {
-            headers: request.headers,
-            sentPut: false
-          })
+          this._transferRequestEntryMap.set(request.body.transferId, requestEntry)
+          logger.debug('storing transfer post request', { requestEntry })
         } else if (isQuotePostMessage(request.body)) {
-          this._quoteRequestEntryMap.set(request.body.quoteId, {
-            headers: request.headers,
-            sentPut: false
-          })
+          this._quoteRequestEntryMap.set(request.body.quoteId, requestEntry)
+          logger.debug('storing quote post request', { requestEntry })
         } else if (isQuotePutErrorRequest(request)) {
-          this._quoteErrorRequestEntryMap.set(request.objectId!, {
-            headers: request.headers,
-            sentPut: false
-          })
+          this._quoteErrorRequestEntryMap.set(request.objectId!, requestEntry)
+          logger.debug('storing quote put error request', { requestEntry })
         } else if (isTransferPutErrorRequest(request)) {
-          this._transferErrorRequestEntryMap.set(request.objectId!, {
-            headers: request.headers,
-            sentPut: false
-          })
+          this._transferErrorRequestEntryMap.set(request.objectId!, requestEntry)
+          logger.debug('storing transfer put error request', { requestEntry })
         }
 
         return next(request)
