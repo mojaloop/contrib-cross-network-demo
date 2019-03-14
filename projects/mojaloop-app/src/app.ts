@@ -119,7 +119,7 @@ export class App {
   async sendOutgoingRequest (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> {
     const destination = request.headers[this._destinationHeader]
     const nextHop = this.routingTable.nextHop(destination)
-    const handler = this.outgoingRequestHandlers.get(nextHop) 
+    const handler = this.outgoingRequestHandlers.get(nextHop)
 
     if (!handler) {
       logger.error('Handler not found for specified nextHop=', nextHop)
