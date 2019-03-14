@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "rm -Rf .nyc_output && rm -Rf coverage && rm -Rf lib",
     "build": "npm run clean && tsc",
+    "generate-client": "openapi-generator generate -i ./openapi.yaml -g typescript-axios -o ./src/client && rm ./src/client/git_push.sh",
     "test": "nyc mocha --require ts-node/register --ui mocha-typescript --require source-map-support/register 'test/**/*.test.ts'"
   },
   "directories": {
@@ -28,6 +29,7 @@
     "@types/express": "^4.16.1",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.0",
+    "@openapitools/openapi-generator-cli": "cli-3.3.4",
     "axios": "^0.18.0",
     "chai": "^4.2.0",
     "codecov": "^3.2.0",

@@ -1,0 +1,286 @@
+---
+openapi: 3.0.2
+info:
+  title: Router
+  description: A service for managing peers and routes in a routing table and get
+    the list of peers that can route to a given destination address.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+paths:
+  /peers:
+    summary: Path used to manage Peers and get Peers for a given destination address.
+    description: "The REST endpoint/path used to list and create zero or more `Peer`\
+      \ entities.  \n\nThis path contains a `GET` and `POST` operation to perform\
+      \ the list and create tasks, respectively.\n\nThis path is also used to get\
+      \ the list of `Peer` entities that are known to be able to route messages to\
+      \ a given destination address."
+    get:
+      summary: List Peers
+      description: |-
+        Gets a list of `Peer` entities.
+        If a `destinationAddress` is provided then only return peers that are able to route to that address.
+      operationId: getPeers
+      parameters:
+      - name: destinationAddress
+        in: query
+        description: The destination address to filter peers by. Only peers that can
+          route to the provided address are returned.
+        schema:
+          $ref: '#/components/schemas/Address'
+      responses:
+        200:
+          description: A list of peers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Peer'
+    post:
+      summary: Add a peer
+      description: Add a new peer to the routing table
+      operationId: addPeer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Peer'
+            examples:
+              Peer that requires authentication of route updates:
+                value:
+                  id: Alice
+                  relation: peer
+                  routingSecret: R28gUGF0cyE=
+                  shouldAuth: true
+              Peer that does not require authentication of route updates:
+                value:
+                  id: bob
+                  relation: peer
+        required: true
+      responses:
+        201:
+          description: The peer has been added
+        400:
+          description: The peer already exists or the request was invalid
+  /peers/{id}:
+    summary: Path used to manage a single Peer.
+    description: The REST endpoint/path used to get, update, and delete single instances
+      of an `Peer`.  This path contains `GET`, `PUT`, and `DELETE` operations used
+      to perform the get, update, and delete tasks, respectively.
+    get:
+      summary: Get a Peer
+      description: Gets the details of a single instance of a `Peer`.
+      operationId: getPeer
+      responses:
+        200:
+          description: Successful response - returns a single `Peer`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Peer'
+        404:
+          description: Peer does not exist
+    put:
+      summary: Update a Peer
+      description: Updates an existing `Peer`.
+      operationId: updatePeer
+      requestBody:
+        description: Updated `Peer` information.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Peer'
+        required: true
+      responses:
+        202:
+          description: Successful response.
+        400:
+          description: Invalid request.
+        404:
+          description: Peer does not exist
+    delete:
+      summary: Delete a Peer
+      description: Deletes an existing `Peer`.
+      operationId: deletePeer
+      responses:
+        204:
+          description: Successful response.
+        404:
+          description: Peer does not exist
+    parameters:
+    - name: id
+      in: path
+      description: A unique identifier for a `Peer`.
+      required: true
+      schema:
+        $ref: '#/components/schemas/PeerId'
+  /peers/{id}/routes:
+    summary: Path used to manage the Routes for a Peer.
+    description: The REST endpoint/path used to list and create zero or more `Route`
+      entities.  This path contains a `GET` and `POST` operation to perform the list
+      and create tasks, respectively.
+    get:
+      summary: List Routes for Peer
+      description: Gets a list of all `Route` entities for the `Peer`.
+      operationId: getRoutesForPeer
+      responses:
+        200:
+          description: Successful response - returns an array of `Route` entities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+        404:
+          description: Peer does not exist
+    post:
+      summary: Add a Route for a Peer
+      description: Adds a new `Route` for the `Peer`
+      operationId: addRouteForPeer
+      requestBody:
+        description: A new `Route` to be added.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Route'
+        required: true
+      responses:
+        201:
+          description: Successful response.
+        404:
+          description: Peer does not exist
+    parameters:
+    - name: id
+      in: path
+      description: A unique identifier for a `Peer`.
+      required: true
+      schema:
+        $ref: '#/components/schemas/PeerId'
+  /peers/{id}/routes/{prefix}:
+    summary: Path used to manage a single Route.
+    description: The REST endpoint/path used to get, update, and delete single instances
+      of a `Route`.  This path contains `GET`, `PUT`, and `DELETE` operations used
+      to perform the get, update, and delete tasks, respectively.
+    get:
+      summary: Get a Route for a Peer
+      description: Gets the details of a single instance of a `Route` for a `Peer`.
+      operationId: getRouteForPeer
+      responses:
+        200:
+          description: Successful response - returns a single `Route`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+        404:
+          description: Peer or Route does not exist
+    put:
+      summary: Update a Route for a Peer
+      description: Updates an existing `Route` for a `Peer`.
+      operationId: updateRouteForPeer
+      requestBody:
+        description: Updated `Route` information for a `Peer`.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Route'
+        required: true
+      responses:
+        202:
+          description: Successful response.
+        404:
+          description: Peer or Route does not exist
+    delete:
+      summary: Delete a Route
+      description: Deletes an existing `Route` for a `Peer`.
+      operationId: deleteRouteForPeer
+      responses:
+        204:
+          description: Successful response.
+        404:
+          description: Peer or Route does not exist
+    parameters:
+    - name: id
+      in: path
+      description: A unique identifier for a `Peer`.
+      required: true
+      schema:
+        $ref: '#/components/schemas/PeerId'
+    - name: prefix
+      in: path
+      description: A unique identifier for a Route at a Peer
+      required: true
+      schema:
+        $ref: '#/components/schemas/Address'
+components:
+  schemas:
+    Relation:
+      description: The type of relationship a peer has with another peer
+      enum:
+      - parent
+      - child
+      - peer
+      - local
+      type: string
+      example: child
+    Peer:
+      title: Peer
+      description: A peer that is tracked in the routing table
+      required:
+      - relation
+      - id
+      type: object
+      properties:
+        id:
+          description: The id of the peer
+          type: string
+        relation:
+          $ref: '#/components/schemas/Relation'
+          description: The relationship of the peer with this entity
+        routingSecret:
+          format: byte
+          description: The secret used to authenticate route updates
+          type: string
+        shouldAuth:
+          description: Should route updates be authenticated
+          type: boolean
+      example: |-
+        {
+            "id": "alice",
+            "relation": "peer",
+            "routingSecret": "c2VjcmV0Cg==",
+            "shouldAuth": true
+        }
+    Address:
+      title: Root Type for Address
+      description: A valid address
+      pattern: (?=^.{1,1023}$)^(g|private|example|peer|self|test[1-3]?|local)([.][a-zA-Z0-9_~-]+)+$
+      type: string
+      example: g.alice.0dbd2ea3-c07b-40a3-aeac-2e28550d1c0d
+    Route:
+      title: Root Type for Route
+      description: A route in a routing table that is associated with a Peer
+      type: object
+      properties:
+        prefix:
+          type: string
+        path:
+          type: array
+          items: {}
+        weight:
+          format: int32
+          type: integer
+        auth:
+          type: string
+      example: "{\n  \"prefix\": \"g.alice.bob.fred\",\n  \"path\": [\n      \"g.alice\"\
+        , \"g.alice.bob\"\n    ],\n  \"weight\": 1,\n  \"auth\": \"c2VjcmV0Cg==\"\
+        \ \n}  "
+    PeerId:
+      title: Root Type for Peer ID
+      description: A valid Peer ID
+      pattern: (?=^.{1,1023}$)^[a-zA-Z0-9-]+$
+      type: string
+      example: alice
