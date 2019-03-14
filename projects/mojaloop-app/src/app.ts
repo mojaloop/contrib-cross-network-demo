@@ -24,7 +24,6 @@ export class App {
   private _quoteErrorRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _businessRulesMap: Map<string, Rule[]> = new Map()
   private _mojaAddress: string
-  private _destinationHeader: string
   private _port: number
   private _httpServer: hapi.Server
   private _httpEndpointManager: MojaloopHttpEndpointManager
