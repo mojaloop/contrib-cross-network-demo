@@ -21,7 +21,7 @@
  ******/
 
 import { Request, Response } from 'express'
-import { RouteManager } from 'ilp-routing';
+import { RouteManager, Router } from 'ilp-routing';
 
 export let store = (req: Request, res: Response, routeManager: RouteManager) => {
     const data = req.body
@@ -50,7 +50,61 @@ export let show = (req: Request, res: Response, routeManager: RouteManager) => {
   if (peer) {
     res.json({
       id: peerId,
-      relation: peer.getRelation()
+      relation: peer.getRelation(),
+      routingSecret: '',
+      shouldAuth: false
+    })
+  } else {
+    res.sendStatus(404)
+  }
+}
+
+export let index = (req: Request, res: Response, routeManager: RouteManager, router: Router) => {
+  const destinationAddress = req.query.destinationAddress
+
+  if(destinationAddress) {
+    try {
+      const destinationPeer = router.nextHop(destinationAddress)
+      const peer = routeManager.getPeer(destinationPeer)!
+      res.json([
+        {
+          id: destinationPeer,
+          relation: peer.getRelation(),
+          routingSecret: '',
+          shouldAuth: false
+        }
+      ])
+    } catch {
+      res.sendStatus(404)
+    }
+  } else {
+    const peers = routeManager.getPeerList().map((peerId: string) => {
+      const peer  = routeManager.getPeer(peerId)
+      if(peer) {
+        return {
+          id: peerId,
+          relation: peer.getRelation(),
+          routingSecret: '', // TODO temp till ilp-routing allows exposing this data
+          shouldAuth: false
+        }
+      }
+    })
+    res.json(peers)
+  }
+
+}
+
+export let update = (req: Request, res: Response, routeManager: RouteManager) => {
+  const peerId = req.params.id
+
+  const peer = routeManager.getPeer(peerId)
+
+  if (peer) {
+    res.json({
+      id: peerId,
+      relation: peer.getRelation(),
+      routingSecret: '',
+      shouldAuth: false
     })
   } else {
     res.sendStatus(404)
