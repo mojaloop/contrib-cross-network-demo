@@ -22,7 +22,6 @@
 
 import express = require('express')
 import {Request, Response} from 'express'
-import * as nextHopeController from './controllers/nextHopController'
 import * as peerController from './controllers/peerController'
 import * as peerRoutesController from './controllers/peerRoutesController'
 import { RouteManager, Router } from 'ilp-routing';
@@ -31,16 +30,17 @@ export function createApp(routeManager: RouteManager, router: Router) {
   const app = express()
   app.use(express.json())
   app.use(express.urlencoded())  
-  
-  app.get("/nexthop/:address", (req: Request, res: Response) => nextHopeController.index(req,res, router) )
-  
+    
+  app.get('/peers', (req: Request, res: Response) => peerController.index(req,res, routeManager, router))
   app.get('/peers/:id', (req: Request, res: Response) => peerController.show(req,res, routeManager))
   app.post('/peers', (req: Request, res: Response) => peerController.store(req,res, routeManager))
   app.delete('/peers/:id', (req: Request, res: Response) => peerController.destroy(req,res, routeManager))
 
-  app.post('/routes', (req: Request, res: Response) => peerRoutesController.store(req,res, routeManager))
-  app.delete('/routes', (req: Request, res: Response) => peerRoutesController.destroy(req,res, routeManager))
-
+  app.get('/peers/:id/routes', (req: Request, res: Response) => peerRoutesController.index(req,res, routeManager))
+  app.post('/peers/:id/routes', (req: Request, res: Response) => peerRoutesController.store(req,res, routeManager))
+  app.get('/peers/:id/routes/:prefix', (req: Request, res: Response) => peerRoutesController.show(req,res, routeManager))
+  app.put('/peers/:id/routes/:prefix', (req: Request, res: Response) => peerRoutesController.update(req,res, routeManager))
+  app.delete('/peers/:id/routes/:prefix', (req: Request, res: Response) => peerRoutesController.destroy(req,res, routeManager))
 
   app.get("/health", (req: Request, res: Response) =>  res.sendStatus(200))
 
