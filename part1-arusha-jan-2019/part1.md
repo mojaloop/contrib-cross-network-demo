@@ -88,7 +88,7 @@ For the POC, static routes are configured on the three systems maintaining routi
 
 ## Flow
 
-![alt_text](images/architecture.png "architecture")
+![alt_text](../images/architecture.png "architecture")
 
 **Figure 1**: The Mojaloop architecture
 
@@ -264,7 +264,7 @@ On startup, an account with a plugin that communicates using HTTP/REST is create
 
 The client is used to post to the necessary endpoints on the destination Moja hub.
 
-![alt_text](images/cnp.png "image_tooltip")
+![alt_text](../images/cnp.png "image_tooltip")
 
 **Figure 2**: The Super Remit cross-network provider which has an account with Blue and Red Moja. Each of these accounts has an HTTP/REST plugin (MojaHttp plugin) which facilitates with communication with the appropriate Moja Hub.
 
