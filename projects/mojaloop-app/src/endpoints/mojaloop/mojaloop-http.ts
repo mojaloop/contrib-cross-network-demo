@@ -1,6 +1,16 @@
 import { Endpoint, RequestHandler, HttpEndpointOpts } from '@interledger/rafiki'
-import axios, { AxiosInstance, AxiosResponse } from 'axios'
-import { MojaloopHttpRequest, MojaloopHttpReply, MessageType } from '../types/mojaloop-packets'
+import axios, { AxiosInstance } from 'axios'
+import {
+  MojaloopHttpRequest,
+  MojaloopHttpReply,
+  isTransferPostMessage,
+  isTransferPutMessage,
+  isQuotePostMessage,
+  isQuotePutMessage,
+  isQuoteGetRequest,
+  isTransferGetRequest,
+  isTransferPutErrorRequest,
+  isQuotePutErrorRequest } from '../../types/mojaloop-packets'
 
 export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, MojaloopHttpReply> {
   private client: AxiosInstance
@@ -16,18 +26,31 @@ export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, Mojal
   async sendOutgoingRequest (request: MojaloopHttpRequest, sentCallback?: () => void): Promise<MojaloopHttpReply> {
 
     let url: string
-    if (request.type === MessageType.transfer && request.method === 'post') {
+    let method: string
+    if (isTransferPostMessage(request.body)) {
       url = '/transfers'
-    } else if (request.type === MessageType.transfer && request.method === 'put') {
+      method = 'post'
+    } else if (isTransferPutMessage(request.body)) {
       url = `/transfers/${request.objectId}`
-    } else if (request.type === MessageType.quote && request.method === 'post') {
-      url = '/quotes'
-    } else if (request.type === MessageType.quote && request.method === 'put') {
-      url = `/quotes/${request.objectId}`
-    } else if (request.type === MessageType.transferError) {
+      method = 'put'
+    } else if (isTransferGetRequest(request)) {
+      url = `/transfers/${request.objectId}`
+      method = 'get'
+    } else if (isTransferPutErrorRequest(request)) {
       url = `/transfers/${request.objectId}/error`
-    } else if (request.type === MessageType.quoteError) {
+      method = 'put'
+    } else if (isQuotePostMessage(request.body)) {
+      url = '/quotes'
+      method = 'post'
+    } else if (isQuotePutMessage(request.body)) {
+      url = `/quotes/${request.objectId}`
+      method = 'put'
+    } else if (isQuoteGetRequest(request)) {
+      url = `/quotes/${request.objectId}`
+      method = 'get'
+    } else if (isQuotePutErrorRequest(request)) {
       url = `/quotes/${request.objectId}/error`
+      method = 'put'
     } else {
       throw new Error('Unknown message type')
     }
@@ -35,9 +58,9 @@ export class MojaloopHttpEndpoint implements Endpoint<MojaloopHttpRequest, Mojal
     return this.client.request({
       url,
       baseURL: this.baseUrl,
-      method: request.method,
+      method,
       headers: request.headers,
-      data: request.data
+      data: request.body
     })
   }
 
