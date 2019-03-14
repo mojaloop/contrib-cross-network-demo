@@ -1,26 +1,36 @@
 import { pipeline } from '@interledger/rafiki'
+import axios, { AxiosResponse } from 'axios'
 import { Rule, setPipelineReader } from './types/rule'
 import { PeerInfo } from './types/peer'
 import hapi from 'hapi'
 import { MojaloopHttpEndpoint } from './endpoints/mojaloop/mojaloop-http'
 import { MojaloopHttpEndpointManager } from './endpoints/mojaloop/mojaloop-http-server'
 import { MojaloopHttpRequest, MojaloopHttpReply } from './types/mojaloop-packets'
+import { log } from './winston'
+import { Router as RoutingTable, RouteManager, IncomingRoute } from 'ilp-routing'
+
+const logger = log.child({ component: 'App' })
 
 export interface AppOptions {
   mojaAddress?: string,
-  port: number
+  port: number,
+  destinationHeader?: string
 }
 export class App {
+  routingTable: RoutingTable = new RoutingTable()
+  routeManager: RouteManager = new RouteManager(this.routingTable)
   private _businessRulesMap: Map<string, Rule[]> = new Map()
   private _mojaAddress: string
-  private port: number
+  private _destinationHeader: string
+  private _port: number
   private httpServer: hapi.Server
   private httpEndpointManager: MojaloopHttpEndpointManager
-  private outgoinRequestHandlers: Map<string, (request: MojaloopHttpRequest) => Promise<MojaloopHttpReply>> = new Map()
+  private outgoingRequestHandlers: Map<string, (request: MojaloopHttpRequest) => Promise<MojaloopHttpReply>> = new Map()
 
-  constructor ({ mojaAddress, port }: AppOptions) {
+  constructor ({ mojaAddress, port, destinationHeader }: AppOptions) {
     this._mojaAddress = mojaAddress || 'unknown'
-    this.port = port
+    this._destinationHeader = destinationHeader || 'fspiop-destination'
+    this._port = port
     this.httpServer = new hapi.Server({
       host: '0.0.0.0',
       port
@@ -38,24 +48,32 @@ export class App {
   }
 
   public async start (): Promise<void> {
-    console.log(`Starting app http server on port=${this.port}`)
+    logger.info('Starting app http server on port=' + this._port)
     await this.httpServer.start()
   }
 
   public async shutdown (): Promise<void> {
-    console.log('Stopping app http server')
+    logger.info('Stopping app http server')
     await this.httpServer.stop()
   }
 
-  public async addPeer (peerInfo: PeerInfo) {
+  public async addPeer (peerInfo: PeerInfo, endpoint?: MojaloopHttpEndpoint) {
+    logger.info('adding new peer: ' + peerInfo.id, { peerInfo })
+    this.routeManager.addPeer(peerInfo.id, peerInfo.relation)
+    // TODO: assuming will have address for this peer.
+    this.routeManager.addRoute({
+      peer: peerInfo.id,
+      prefix: peerInfo.mojaAddress,
+      path: []
+    })
     const rulesInstances: Rule[] = this._createRules(peerInfo)
     this._businessRulesMap.set(peerInfo.id, rulesInstances)
-    const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
-    this.httpEndpointManager.set(peerInfo.id, endpoint)
+    const endpointInstance = endpoint || new MojaloopHttpEndpoint({ url: peerInfo.url })
+    this.httpEndpointManager.set(peerInfo.id, endpointInstance)
 
     const sendOutgoingRequest = (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => {
       try {
-        return endpoint.sendOutgoingRequest(request)
+        return endpointInstance.sendOutgoingRequest(request)
       } catch (e) {
 
         e.message = 'failed to send packet: ' + e.message
@@ -68,10 +86,10 @@ export class App {
     const combinedRules = pipeline(...rulesInstances)
     const sendIncoming = rulesInstances.length > 0 ? setPipelineReader('incoming', combinedRules, this.sendOutgoingRequest.bind(this)) : this.sendOutgoingRequest.bind(this)
     const sendOutgoing = rulesInstances.length > 0 ? setPipelineReader('outgoing', combinedRules, sendOutgoingRequest) : sendOutgoingRequest
-    endpoint.setIncomingRequestHandler((request: MojaloopHttpRequest) => {
+    endpointInstance.setIncomingRequestHandler((request: MojaloopHttpRequest) => {
       return sendIncoming(request)
     })
-    this.outgoinRequestHandlers.set(peerInfo.id, sendOutgoing)
+    this.outgoingRequestHandlers.set(peerInfo.id, sendOutgoing)
 
     rulesInstances.forEach(rule => rule.startup())
   }
@@ -99,16 +117,16 @@ export class App {
   }
 
   async sendOutgoingRequest (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> {
-    const destination = request.headers['fspiop-final-destination']
-    const nextHop = 'bob' // TODO: get from routing service
-    const handler = this.outgoinRequestHandlers.get(nextHop)
+    const destination = request.headers[this._destinationHeader]
+    const nextHop = this.routingTable.nextHop(destination)
+    const handler = this.outgoingRequestHandlers.get(nextHop) 
 
     if (!handler) {
-      console.log('Handler not found for specified nextHop', { nextHop })
+      logger.error('Handler not found for specified nextHop=', nextHop)
       throw new Error(`No handler set for ${nextHop}`)
     }
 
-    console.log('sending outgoing Packet', { destination, nextHop })
+    logger.silly('sending outgoing Packet', { destination, nextHop })
 
     return handler(request)
   }
