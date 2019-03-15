@@ -12,4 +12,5 @@ RUN npm install
 RUN npm run build
 
 EXPOSE 3000
+EXPOSE 2000
 CMD node build/src/start.js
