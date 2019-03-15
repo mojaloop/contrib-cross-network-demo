@@ -1,6 +1,28 @@
 import { App } from './app'
+import { AdminApi } from './services/admin-api'
+import * as winston from 'winston'
 
-const port = Number(process.env.PORT) || 3000
+const appPort = Number(process.env.APP_PORT) || 3000
+const adminPort = Number(process.env.ADMIN_API_PORT) || 2000
+
+// Logging
+const formatter = winston.format.printf(({ service, level, message, component, timestamp }) => {
+  return `${timestamp} [${service}${component ? '-' + component : ''}] ${level}: ${message}`
+})
+
+winston.configure({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.timestamp(),
+    winston.format.align(),
+    formatter
+  ),
+  defaultMeta: { service: 'connector' },
+  transports: [
+    new winston.transports.Console()
+  ]
+})
 
 const start = async () => {
 
@@ -14,7 +36,7 @@ const start = async () => {
       }
 
       shuttingDown = true
-      await app.shutdown()
+      await Promise.all([app.shutdown(), adminApi.shutdown()])
 
       // Graceful shutdown
       console.debug('shutting down.')
@@ -27,8 +49,9 @@ const start = async () => {
     }
   })
 
-  const app = new App({ port })
-  await app.start()
+  const app = new App({ port: appPort })
+  const adminApi = new AdminApi ({ app, port: adminPort })
+  await Promise.all([app.start(), adminApi.start()])
 }
 
 start().catch(e => {

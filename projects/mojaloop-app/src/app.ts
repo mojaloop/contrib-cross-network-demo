@@ -13,7 +13,7 @@ const logger = log.child({ component: 'App' })
 
 export interface AppOptions {
   mojaAddress?: string,
-  port: number
+  port?: number
 }
 export class App {
   routingTable: RoutingTable = new RoutingTable()
@@ -30,12 +30,12 @@ export class App {
   private _outgoingRequestHandlers: Map<string, (request: MojaloopHttpRequest) => Promise<MojaloopHttpReply>> = new Map()
   private _peerInfoMap: Map<string, PeerInfo> = new Map()
 
-  constructor ({ mojaAddress, port }: AppOptions) {
-    this._mojaAddress = mojaAddress || 'unknown'
-    this._port = port
+  constructor (opts?: AppOptions) {
+    this._mojaAddress = opts && opts.mojaAddress || 'unknown'
+    this._port = opts && opts.port || 3000
     this._httpServer = new hapi.Server({
       host: '0.0.0.0',
-      port
+      port: this._port
     })
 
     this._httpServer.route({
