@@ -57,6 +57,24 @@ export class AdminApi {
         }
       }
     })
+
+    this._httpServer.route({
+      method: 'POST',
+      path: '/address',
+      handler: this.setAddress.bind(this),
+      options: {
+        payload: {
+          failAction: 'error',
+          output: 'data'
+        },
+        validate: {
+          payload: {
+            address: Joi.string().required()
+          },
+          failAction: (request, h, err) => { throw err }
+        }
+      }
+    })
   }
 
   async start () {
@@ -88,5 +106,11 @@ export class AdminApi {
       logger.error('Could not add peer', { payload: request.payload })
       return reply.response('Invalid participant information: ' + error.message).code(400)
     }
+  }
+
+  setAddress (request: hapi.Request, reply: hapi.ResponseToolkit) {
+    this._app.setMojaAddress(request.payload['address'])
+
+    return reply.response().code(202)
   }
 }

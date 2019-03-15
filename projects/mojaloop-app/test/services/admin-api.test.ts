@@ -14,11 +14,12 @@ describe('Admin api', async function () {
   let app: App
   let adminApi: AdminApi
 
-  beforeEach(function () {
+  beforeEach(async function () {
     app = new App() // defaults to port 3000
     adminApi = new AdminApi({ app }) // default to port 2000
 
-    adminApi.start()
+    await adminApi.start()
+
   })
 
   afterEach(function () {
@@ -48,31 +49,36 @@ describe('Admin api', async function () {
     })
   })
 
-  describe('addPeer', async function () {
-    it('tells the app to add a peer', async function () {
-      const appAddPeerSpy = sinon.spy(app, 'addPeer')
-      const data = {
-        id: 'alice',
-        assetCode: 'USD',
-        assetScale: '2',
-        relation: 'peer',
-        mojaAddress: 'moja.alice',
-        url: 'http://localhost:7780',
-        rules: []
-      }
+  it('can add a peer to the app', async function () {
+    const appAddPeerSpy = sinon.spy(app, 'addPeer')
+    const data = {
+      id: 'alice',
+      assetCode: 'USD',
+      assetScale: '2',
+      relation: 'peer',
+      mojaAddress: 'moja.alice',
+      url: 'http://localhost:7780',
+      rules: []
+    }
 
-      const response = await axios.post('http://0.0.0.0:2000/participants', { ...data })
+    const response = await axios.post('http://0.0.0.0:2000/participants', { ...data })
 
-      assert.equal(response.status, 202)
-      sinon.assert.calledWith(appAddPeerSpy, {
-        id: 'alice',
-        assetCode: 'USD',
-        assetScale: 2,
-        relation: 'peer',
-        mojaAddress: 'moja.alice',
-        url: 'http://localhost:7780',
-        rules: []
-      })
+    assert.equal(response.status, 202)
+    sinon.assert.calledWith(appAddPeerSpy, {
+      id: 'alice',
+      assetCode: 'USD',
+      assetScale: 2,
+      relation: 'peer',
+      mojaAddress: 'moja.alice',
+      url: 'http://localhost:7780',
+      rules: []
     })
+  })
+
+  it('can set app\'s moja address', async function () {
+    const response = await axios.post('http://0.0.0.0:2000/address', { address: 'moja.super-remit' })
+
+    assert.equal(response.status, 202)
+    assert.equal(app.getOwnAddress(), 'moja.super-remit')
   })
 })

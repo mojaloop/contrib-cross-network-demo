@@ -98,6 +98,7 @@ export class App {
   }
 
   public async removePeer (id: string) {
+    logger.info('Removing peer:' + id)
     Array.from(this.getRules(id)).forEach(rule => rule.shutdown())
     this._businessRulesMap.delete(id)
     this._httpEndpointManager.delete(id)
@@ -106,6 +107,7 @@ export class App {
   }
 
   public setMojaAddress (address: string) {
+    logger.info('Setting address:' + address)
     this._mojaAddress = address
   }
 
