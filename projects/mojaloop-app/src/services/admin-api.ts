@@ -2,7 +2,7 @@
 import { App } from '../app'
 import * as hapi from 'hapi'
 import { log } from '../winston'
-import { PeerInfo } from '../types/peer';
+import { PeerInfo } from '../types/peer'
 const logger = log.child({ component: 'admin-api' })
 const BaseJoi = require('joi-currency-code')(require('joi'))
 const Extension = require('joi-date-extensions')

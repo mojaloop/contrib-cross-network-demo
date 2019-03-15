@@ -18,7 +18,7 @@ winston.configure({
     winston.format.align(),
     formatter
   ),
-  defaultMeta: { service: 'connector' },
+  defaultMeta: { service: 'cnp' },
   transports: [
     new winston.transports.Console()
   ]
@@ -50,7 +50,7 @@ const start = async () => {
   })
 
   const app = new App({ port: appPort })
-  const adminApi = new AdminApi ({ app, port: adminPort })
+  const adminApi = new AdminApi({ app, port: adminPort })
   await Promise.all([app.start(), adminApi.start()])
 }
 

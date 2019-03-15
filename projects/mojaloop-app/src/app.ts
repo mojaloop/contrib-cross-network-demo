@@ -9,7 +9,7 @@ import { log } from './winston'
 import { Router as RoutingTable, RouteManager } from 'ilp-routing'
 import { TrackRequestsRule, RequestMapEntry } from './rules/track-requests-rule'
 
-const logger = log.child({ component: 'App' })
+const logger = log.child({ component: 'app' })
 
 export interface AppOptions {
   mojaAddress?: string,
