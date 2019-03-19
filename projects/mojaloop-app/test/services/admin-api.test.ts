@@ -5,7 +5,6 @@ import chaiAsPromised from 'chai-as-promised'
 import axios from 'axios'
 import { App } from '../../src/app'
 import { AdminApi } from '../../src/services/admin-api'
-import { PeerInfo } from '../../src/types/peer';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -81,4 +80,34 @@ describe('Admin api', async function () {
     assert.equal(response.status, 202)
     assert.equal(app.getOwnAddress(), 'moja.super-remit')
   })
+
+  it('can get a key-value mapping of participant ids and participant infos', async function () {
+    const participantInfo = {
+      id: 'alice',
+      assetCode: 'USD',
+      assetScale: '2',
+      relation: 'peer',
+      mojaAddress: 'moja.alice',
+      url: 'http://localhost:7780',
+      rules: []
+    }
+    await addParticipant(participantInfo)
+
+    const response = await axios.get('http://0.0.0.0:2000/participants')
+
+    assert.deepEqual(response.data, {'alice': {
+      id: 'alice',
+      assetCode: 'USD',
+      assetScale: 2, // will return a peerInfo object which has assetScale as a number
+      relation: 'peer',
+      mojaAddress: 'moja.alice',
+      url: 'http://localhost:7780',
+      rules: []
+    }})
+  })
 })
+
+
+async function addParticipant(participantInfo: { [key: string]: any }) {
+  return axios.post('http://0.0.0.0:2000/participants', {...participantInfo})
+}
