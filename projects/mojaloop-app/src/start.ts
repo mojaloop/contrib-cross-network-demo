@@ -6,8 +6,8 @@ const appPort = Number(process.env.APP_PORT) || 3000
 const adminPort = Number(process.env.ADMIN_API_PORT) || 2000
 
 // Logging
-const formatter = winston.format.printf(({ service, level, message, component, timestamp }) => {
-  return `${timestamp} [${service}${component ? '-' + component : ''}] ${level}: ${message}`
+const formatter = winston.format.printf(({ service, level, message, component, timestamp, ...metaData }) => {
+  return `${timestamp} [${service}${component ? '-' + component : ''}] ${level}: ${message}` + (metaData ? ' meta data: ' + JSON.stringify(metaData) : '')
 })
 
 winston.configure({
