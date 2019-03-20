@@ -147,7 +147,7 @@ export class App {
 
     request.headers = this._updateRequestHeaders(request)
 
-    logger.silly('sending outgoing Packet', { destination, nextHop })
+    logger.debug('sending outgoing Packet', { destination, nextHop, headers: request.headers })
 
     return handler(request)
   }
