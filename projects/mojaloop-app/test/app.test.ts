@@ -351,7 +351,7 @@ describe('Mojaloop CNP App', function () {
         prefix: 'moja.fred',
         path: []
       })
-      console.log('post headers', test)
+
       await endpoint.handleIncomingRequest({
         headers: {
           'fspiop-source': 'moja.bob',
@@ -368,6 +368,14 @@ describe('Mojaloop CNP App', function () {
       assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-source'], 'moja.cnp')
       assert.equal(endpointSendStub.getCall(1).args[0].headers['fspiop-destination'], 'moja.bob')
     })
+  })
+
+  it('can return a key-value mapping of peers and peer infos', async function () {
+    await app.addPeer(peerInfo)
+
+    const peers = app.getPeers()
+
+    assert.deepEqual(peers, { 'alice': peerInfo })
   })
 
   it('can forward a packet', async function () {

@@ -2,9 +2,13 @@ import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from '../mojaloop-http'
 import { MojaloopHttpRequest } from '../../../types/mojaloop-packets'
 import { QuotesPostRequest, QuotesIDPutResponse } from '../../../types/mojaloop-models/models'
+import { log } from '../../../winston'
+
+const logger = log.child({ component: 'Quotes-Controller' })
 
 export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
+    logger.debug('Received post from ' + request.path, { data: request.payload, headers: request.headers })
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
 
     const quotesPostRequest: MojaloopHttpRequest = {
@@ -22,6 +26,7 @@ export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
 
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
+    logger.debug('Received put from ' + request.path, { data: request.payload, headers: request.headers })
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
 
     const quotesIdPutRequest: MojaloopHttpRequest = {
@@ -40,7 +45,7 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
 
 export function show (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
-
+    logger.debug('Received get from ' + request.path, { data: request.payload, headers: request.headers })
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
     const quoteGetRequest: MojaloopHttpRequest = {
       objectId: request.params.id,

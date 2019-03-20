@@ -119,6 +119,14 @@ export class App {
     return this._businessRulesMap.get(peerId) || []
   }
 
+  public getPeers (): { [peerId: string]: PeerInfo } {
+    let peers: { [peerId: string]: PeerInfo } = {}
+
+    this._peerInfoMap.forEach(peerInfo => peers[peerInfo.id] = peerInfo)
+
+    return peers
+  }
+
   public getPeerEndpoint (peerId: string): MojaloopHttpEndpoint {
     const endpoint = this._httpEndpointManager.get(peerId)
     if (!endpoint) {
@@ -139,7 +147,7 @@ export class App {
 
     request.headers = this._updateRequestHeaders(request)
 
-    logger.silly('sending outgoing Packet', { destination, nextHop })
+    logger.debug('sending outgoing Packet', { destination, nextHop, headers: request.headers })
 
     return handler(request)
   }

@@ -59,6 +59,12 @@ export class AdminApi {
     })
 
     this._httpServer.route({
+      method: 'GET',
+      path: '/participants',
+      handler: this.getParticipants.bind(this)
+    })
+
+    this._httpServer.route({
       method: 'POST',
       path: '/address',
       handler: this.setAddress.bind(this),
@@ -106,6 +112,10 @@ export class AdminApi {
       logger.error('Could not add peer', { payload: request.payload })
       return reply.response('Invalid participant information: ' + error.message).code(400)
     }
+  }
+
+  getParticipants (request: hapi.Request, reply: hapi.ResponseToolkit) {
+    return this._app.getPeers()
   }
 
   setAddress (request: hapi.Request, reply: hapi.ResponseToolkit) {

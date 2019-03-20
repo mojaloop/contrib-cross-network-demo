@@ -2,9 +2,13 @@ import * as hapi from 'hapi'
 import { MojaloopHttpRequest } from '../../../types/mojaloop-packets'
 import { ErrorInformationObject } from '../../../types/mojaloop-models/models'
 import { MojaloopHttpEndpoint } from '../mojaloop-http'
+import { log } from '../../../winston'
+
+const logger = log.child({ component: 'Quotes-Error-Controller' })
 
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
+    logger.debug('Received put from ' + request.path, { data: request.payload, headers: request.headers })
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
     const quoteErrorPutHttpRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
