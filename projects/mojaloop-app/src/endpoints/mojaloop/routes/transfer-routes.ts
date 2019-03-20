@@ -1,8 +1,7 @@
 import * as hapi from 'hapi'
 import * as TransfersController from '../controllers/transfers-controller'
 import * as TransfersErrorController from '../controllers/transfers-error-controller'
-import { ExtensionListValidation, MoneyValidation, IlpPacketValidation, ExpirationValidation, ConditionValidation, ErrorInformationValidation } from './validation'
-
+import { ExtensionListValidation, MoneyValidation, IlpPacketValidation, ExpirationValidation, ConditionValidation, ErrorInformationValidation, Headers } from './validation'
 const BaseJoi = require('joi-currency-code')(require('joi'))
 const dateExtension = require('joi-date-extensions')
 const Joi = BaseJoi.extend(dateExtension)
@@ -22,19 +21,7 @@ export const TransferRoutes: hapi.ServerRoute[] = [
         output: 'data'
       },
       validate: {
-        headers: Joi.object({
-          'accept': Joi.string().optional().regex(/application\/vnd.interoperability[.]/),
-          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
-          'content-length': Joi.number().max(5242880),
-          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
-          'x-forwarded-for': Joi.string().optional(),
-          'fspiop-source': Joi.string().required(),
-          'fspiop-destination': Joi.string().optional(),
-          'fspiop-encryption': Joi.string().optional(),
-          'fspiop-signature': Joi.string().optional(),
-          'fspiop-uri': Joi.string().optional(),
-          'fspiop-http-method': Joi.string().optional()
-        }).unknown(false).options({ stripUnknown: true }),
+        headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         params: {
           peerId: Joi.string().required()
         },
@@ -64,17 +51,7 @@ export const TransferRoutes: hapi.ServerRoute[] = [
         failAction: 'error'
       },
       validate: {
-        headers: Joi.object({
-          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
-          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
-          'x-forwarded-for': Joi.string().optional(),
-          'fspiop-source': Joi.string().required(),
-          'fspiop-destination': Joi.string().optional(),
-          'fspiop-encryption': Joi.string().optional(),
-          'fspiop-signature': Joi.string().optional(),
-          'fspiop-uri': Joi.string().optional(),
-          'fspiop-http-method': Joi.string().optional()
-        }).unknown(false).options({ stripUnknown: true }),
+        headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         params: {
           id: Joi.string().required().description('Id of transfer'),
           peerId: Joi.string().required()
@@ -97,21 +74,12 @@ export const TransferRoutes: hapi.ServerRoute[] = [
       tags,
       description: 'Get a transfer',
       validate: {
-        headers: Joi.object({
-          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
-          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
-          'x-forwarded-for': Joi.string().optional(),
-          'fspiop-source': Joi.string().required(),
-          'fspiop-destination': Joi.string().optional(),
-          'fspiop-encryption': Joi.string().optional(),
-          'fspiop-signature': Joi.string().optional(),
-          'fspiop-uri': Joi.string().optional(),
-          'fspiop-http-method': Joi.string().optional()
-        }).unknown(false).options({ stripUnknown: true }),
+        headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         params: {
           id: Joi.string().required().description('Id of transfer'),
           peerId: Joi.string().required()
-        }
+        },
+        failAction: (request, h, err) => { throw err }
       }
     }
   },
@@ -126,17 +94,7 @@ export const TransferRoutes: hapi.ServerRoute[] = [
         failAction: 'error'
       },
       validate: {
-        headers: Joi.object({
-          'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
-          'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
-          'x-forwarded-for': Joi.string().optional(),
-          'fspiop-source': Joi.string().required(),
-          'fspiop-destination': Joi.string().optional(),
-          'fspiop-encryption': Joi.string().optional(),
-          'fspiop-signature': Joi.string().optional(),
-          'fspiop-uri': Joi.string().optional(),
-          'fspiop-http-method': Joi.string().optional()
-        }).unknown(false).options({ stripUnknown: true }),
+        headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         params: {
           id: Joi.string().required().description('Id of transfer'),
           peerId: Joi.string().required()

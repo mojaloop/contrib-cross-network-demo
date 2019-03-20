@@ -383,6 +383,7 @@ describe('Mojaloop CNP App', function () {
     const headers = {
       'fspiop-source': 'bob',
       'content-type': 'application/vnd.interoperability.transfers+json;version=1.0',
+      'accept': 'application/vnd.interoperability.transfers+json;version=1.0',
       'fspiop-destination': 'moja.alice',
       'date': "Thu, 14 Mar 2019 09:07:54 GMT"
     }

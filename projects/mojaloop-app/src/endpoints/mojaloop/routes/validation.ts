@@ -67,3 +67,18 @@ export const ErrorInformationValidation = {
   errorDescription: Joi.string().required().max(128).description('Error description string.'),
   extensionList: Joi.object().keys(ExtensionListValidation).optional()
 }
+
+export const Headers = {
+  'accept': Joi.string().optional().regex(/application\/vnd.interoperability[.]/),
+  'content-type': Joi.string().required().regex(/application\/vnd.interoperability[.]/),
+  'content-length': Joi.number().max(5242880),
+  'date': Joi.date().format('ddd, D MMM YYYY H:mm:ss [GMT]').required(),
+  'x-forwarded-for': Joi.string().optional(),
+  'fspiop-source': Joi.string().required(),
+  'fspiop-address': Joi.string().optional(),
+  'fspiop-destination': Joi.string().optional(),
+  'fspiop-encryption': Joi.string().optional(),
+  'fspiop-signature': Joi.string().optional(),
+  'fspiop-uri': Joi.string().optional(),
+  'fspiop-http-method': Joi.string().optional()
+}
