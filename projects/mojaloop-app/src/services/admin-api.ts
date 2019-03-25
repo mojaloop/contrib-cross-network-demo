@@ -82,6 +82,12 @@ export class AdminApi {
       }
     })
 
+    this._httpServer.route({
+      method: 'GET',
+      path: '/routes',
+      handler: this.getRoutingTable.bind(this)
+    })
+
     // logging to see the path of every request
     this._httpServer.events.on('response', function (request: hapi.Request) {
       logger.info(request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
@@ -127,5 +133,9 @@ export class AdminApi {
     this._app.setMojaAddress(request.payload['address'])
 
     return reply.response().code(202)
+  }
+
+  getRoutingTable (request: hapi.Request, reply: hapi.ResponseToolkit) {
+    return this._app.routingTable.getRoutingTable()
   }
 }

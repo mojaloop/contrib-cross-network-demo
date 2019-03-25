@@ -105,6 +105,28 @@ describe('Admin api', async function () {
       rules: []
     }})
   })
+
+  it('can return a summary of the routing table as a JSON object', async function () {
+    const participantInfo = {
+      id: 'alice',
+      assetCode: 'USD',
+      assetScale: '2',
+      relation: 'peer',
+      mojaAddress: 'moja.alice',
+      url: 'http://localhost:7780',
+      rules: []
+    }
+    await addParticipant(participantInfo)
+
+    const response = await axios.get('http://0.0.0.0:2000/routes')
+
+    assert.deepEqual(response.data, { 
+      "moja.alice": {
+        "nextHop": "alice",
+        "path": []
+      }
+    })
+  })
 })
 
 
