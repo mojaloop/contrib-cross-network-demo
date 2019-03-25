@@ -46,6 +46,11 @@ export class App {
       }
     })
 
+    // logging to see the path of every request
+    this._httpServer.events.on('response', function (request: hapi.Request) {
+      logger.info(request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
+    })
+
     this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer)
   }
 
