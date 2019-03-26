@@ -5,6 +5,7 @@ const logger = log.child({ component: 'track-request-rule' })
 
 export type RequestMapEntry = {
   headers: { [k: string]: any }
+  body: { [k: string]: any }
   sentPut: boolean
 }
 
@@ -24,8 +25,9 @@ export class TrackRequestsRule extends Rule {
   constructor ({ transferRequestEntryMap, transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap }: TrackRequestRuleOpts) {
     super({
       processIncoming: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
-        const requestEntry = {
+        const requestEntry: RequestMapEntry = {
           headers: request.headers,
+          body: request.body,
           sentPut: false
         }
         if (isTransferPostMessage(request.body)) {

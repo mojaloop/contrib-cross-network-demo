@@ -10,7 +10,7 @@ import {
   ExpirationValidation,
   IlpPacketValidation,
   ConditionValidation,
-  ErrorInformationValidation, 
+  ErrorInformationValidation,
   Headers } from './validation'
 const BaseJoi = require('joi-currency-code')(require('joi'))
 const Extension = require('joi-date-extensions')

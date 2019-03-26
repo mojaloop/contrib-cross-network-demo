@@ -9,6 +9,7 @@ import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-h
 import { TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from '../../../src/types/mojaloop-models/models'
 import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage, isTransferGetRequest, isTransferPutErrorRequest } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
+import { RequestMapEntry } from '../../../src/rules/track-requests-rule';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -46,13 +47,29 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     }
   }
 
+  const getStoredTransferById = (id: string): RequestMapEntry | undefined => {
+    return {
+      headers,
+      body: postMessage,
+      sentPut: false
+    }
+  }
+
+  const getStoredQuoteById = (id: string) => {
+    return {
+      headers: {},
+      body: {},
+      sentPut: false
+    }
+  }
+
   beforeEach(function () {
     httpServer = new hapi.Server({
       host: '0.0.0.0',
       port: 7780
     })
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer)
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById })
   })
 
   afterEach(function () {
@@ -63,7 +80,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     it('returns a 202 from a transfer post request', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'post',
@@ -82,7 +99,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'post',
@@ -105,17 +122,37 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
   
       assert.equal(res.statusCode, 500)
     })
+
+    it('uses the currency in the amount field to choose the usd account for alice', async function () {
+      const getSpy = sinon.spy(endpointManager, 'get')
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'post',
+        url: '/alice/transfers',
+        payload: postMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
+    })
   })
 
   describe('put transfer', async function () {
     it('returns a 202', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: '/alice/transfers/' + uuid(),
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: putMessage,
         headers
       })
@@ -126,7 +163,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     it('returns 500 if there is no endpoint for the participant', async function () {
       const res = await httpServer.inject({
         method: 'put',
-        url: '/alice/transfers/' + uuid(),
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: putMessage,
         headers
       })
@@ -136,37 +173,55 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
 
     it('gives the endpoint a MojaloopHttpRequest with a body of type TransfersIDPutResponse', async function () {
       let endpointHttpRequest: MojaloopHttpRequest
-      const id = uuid()
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: '/alice/transfers/' + id,
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: putMessage,
         headers
       })
   
       assert.equal(res.statusCode, 202)
       assert.isTrue(isTransferPutMessage(endpointHttpRequest!.body))
-      assert.equal(endpointHttpRequest!.objectId, id)
+      assert.equal(endpointHttpRequest!.objectId, postMessage.transferId)
+    })
+
+    it('uses the currency in the amount field of the stored transfer to choose the usd account for alice', async function () {
+      const getSpy = sinon.spy(endpointManager, 'get')
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: '/alice/transfers/' + postMessage.transferId,
+        payload: putMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
     })
   })
 
   describe('get transfers', function () {
     it('returns 202 on successful get', async function () {
-      const id = uuid()
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'get',
-        url: '/alice/transfers/' + id,
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: {},
         headers
       })
@@ -176,17 +231,16 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
 
     it('gives the endpoint a MojaloopHttpRequest of type TransferGetRequest', async function () {
       let endpointHttpRequest: MojaloopHttpRequest
-      const id = uuid()
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'get',
-        url: '/alice/transfers/' + id,
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: {},
         headers
       })
@@ -198,12 +252,32 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     it('returns 500 if there is no endpoint for the participant', async function () {
       const res = await httpServer.inject({
         method: 'get',
-        url: '/alice/transfers/' + uuid(),
+        url: '/alice/transfers/' + postMessage.transferId,
         payload: {},
         headers
       })
   
       assert.equal(res.statusCode, 500)
+    })
+
+    it('uses the currency in the amount field of the stored transfer to choose the usd account for alice', async function () {
+      const getSpy = sinon.spy(endpointManager, 'get')
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/transfers/' + postMessage.transferId,
+        payload: {},
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
     })
   })
 
@@ -211,11 +285,11 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     it('returns 202 on successful put', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/transfers/${uuid()}/error`,
+        url: `/alice/transfers/${postMessage.transferId}/error`,
         payload: errorMessage,
         headers
       })
@@ -230,12 +304,11 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
-      const id = uuid()
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/transfers/${id}/error`,
+        url: `/alice/transfers/${postMessage.transferId}/error`,
         payload: errorMessage,
         headers
       })
@@ -243,19 +316,40 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
       assert.equal(res.statusCode, 202)
       assert.isTrue(isTransferPutErrorRequest(endpointHttpRequest!))
       assert.deepEqual(endpointHttpRequest!.body, errorMessage)
-      assert.deepEqual(endpointHttpRequest!.objectId, id)
+      assert.deepEqual(endpointHttpRequest!.objectId, postMessage.transferId)
       assert.deepEqual(endpointHttpRequest!.objectType, 'transfer')
     })
 
     it('returns 500 if there is no endpoint for the participant', async function () {
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/transfers/${uuid()}/error`,
+        url: `/alice/transfers/${postMessage.transferId}/error`,
         payload: errorMessage,
         headers
       })
   
       assert.equal(res.statusCode, 500)
+    })
+
+    it('uses the currency in the amount field of the stored transfer to choose the usd account for alice', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      const getSpy = sinon.spy(endpointManager, 'get')
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+      const id = uuid()
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/transfers/${postMessage.transferId}/error`,
+        payload: errorMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
     })
   })
 })

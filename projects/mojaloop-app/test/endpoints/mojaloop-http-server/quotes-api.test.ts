@@ -9,6 +9,7 @@ import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-h
 import { MojaloopHttpRequest, isQuotePostMessage, isQuotePutMessage, isQuoteGetRequest, isQuotePutErrorRequest } from '../../../src/types/mojaloop-packets'
 import { AxiosResponse } from 'axios'
 import { QuotesPostRequest, QuotesIDPutResponse, ErrorInformationObject } from '../../../src/types/mojaloop-models/models';
+import { RequestMapEntry } from '../../../src/rules/track-requests-rule';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -67,13 +68,29 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     }
   }
 
+  const getStoredTransferById = (id: string) => {
+    return {
+      headers: {},
+      body: {},
+      sentPut: false
+    }
+  }
+
+  const getStoredQuoteById = (id: string) => {
+    return {
+      headers,
+      body: postQuoteMessage,
+      sentPut: false
+    }
+  }
+
   beforeEach(function () {
     httpServer = new hapi.Server({
       host: '0.0.0.0',
       port: 7780
     })
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer)
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById })
   })
 
   afterEach(function () {
@@ -84,7 +101,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     it('returns a 202 on successful post', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'post',
@@ -103,7 +120,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'post',
@@ -126,18 +143,37 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
 
       assert.equal(res.statusCode, 500)
     })
+
+    it('uses the currency in the amount field to choose the usd account for alice', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      const getSpy = sinon.spy(endpointManager, 'get')
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'post',
+        url: '/alice/quotes',
+        payload: postQuoteMessage,
+        headers
+      })
+  
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
+    })
   })
 
   describe('put quote', function () {
     it('returns a 202 on successful put', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse })
-      endpointManager.set('alice', endpoint)
-      const quoteId = uuid()
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/quotes/${quoteId}`,
+        url: `/alice/quotes/${postQuoteMessage.quoteId}`,
         payload: quotePutMessage,
         headers
       })
@@ -152,19 +188,18 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
-      const quoteId = uuid()
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/quotes/${quoteId}`,
+        url: `/alice/quotes/${postQuoteMessage.quoteId}`,
         payload: quotePutMessage,
         headers
       })
 
       assert.equal(res.statusCode, 202)
       assert.isTrue(isQuotePutMessage(endpointHttpRequest!.body))
-      assert.equal(endpointHttpRequest!.objectId, quoteId)
+      assert.equal(endpointHttpRequest!.objectId, postQuoteMessage.quoteId)
     })
 
     it('returns 500 if there is no endpoint for the participant', async function () {
@@ -177,18 +212,36 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
 
       assert.equal(res.statusCode, 500)
     })
+
+    it('uses the currency in the amount field of the stored quote to choose the usd account for alice', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      const getSpy = sinon.spy(endpointManager, 'get')
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'put',
+        url: `/alice/quotes/${postQuoteMessage.quoteId}`,
+        payload: quotePutMessage,
+        headers
+      })
+
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
+    })
   })
 
   describe('get quotes', function () {
     it('returns 202 on successful get', async function () {
-      const id = uuid()
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'get',
-        url: '/alice/quotes/' + id,
+        url: '/alice/quotes/' + postQuoteMessage.quoteId,
         payload: {},
         headers
       })
@@ -198,17 +251,16 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
 
     it('gives the endpoint a MojaloopHttpRequest of type TransferGetRequest', async function () {
       let endpointHttpRequest: MojaloopHttpRequest
-      const id = uuid()
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { 
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'get',
-        url: '/alice/quotes/' + id,
+        url: '/alice/quotes/' + postQuoteMessage.quoteId,
         payload: {},
         headers
       })
@@ -227,18 +279,37 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
   
       assert.equal(res.statusCode, 500)
     })
+
+    it('uses the currency in the amount field of the stored quote to choose the usd account for alice', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      const getSpy = sinon.spy(endpointManager, 'get')
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+  
+      const res = await httpServer.inject({
+        method: 'get',
+        url: '/alice/quotes/' + postQuoteMessage.quoteId,
+        payload: {},
+        headers
+      })
+
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
+    })
   })
 
 
-  describe('put transfer error', function () {
+  describe('put quote error', function () {
     it('returns 202 on successful put', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => { return {} as AxiosResponse})
-      endpointManager.set('alice', endpoint)
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/quotes/${uuid()}/error`,
+        url: `/alice/quotes/${postQuoteMessage.quoteId}/error`,
         payload: errorMessage,
         headers
       })
@@ -253,12 +324,11 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
         endpointHttpRequest = request
         return {} as AxiosResponse
        })
-      endpointManager.set('alice', endpoint)
-      const id = uuid()
+      endpointManager.set('alice-usd', endpoint)
   
       const res = await httpServer.inject({
         method: 'put',
-        url: `/alice/quotes/${id}/error`,
+        url: `/alice/quotes/${postQuoteMessage.quoteId}/error`,
         payload: errorMessage,
         headers
       })
@@ -266,7 +336,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       assert.equal(res.statusCode, 202)
       assert.isTrue(isQuotePutErrorRequest(endpointHttpRequest!))
       assert.deepEqual(endpointHttpRequest!.body, errorMessage)
-      assert.deepEqual(endpointHttpRequest!.objectId, id)
+      assert.deepEqual(endpointHttpRequest!.objectId, postQuoteMessage.quoteId)
       assert.deepEqual(endpointHttpRequest!.objectType, 'quote')
     })
 
@@ -279,6 +349,26 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       })
   
       assert.equal(res.statusCode, 500)
+    })
+
+    it('uses the currency in the amount field of the stored quote to choose the usd account for alice', async function () {
+      const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
+      const getSpy = sinon.spy(endpointManager, 'get')
+      endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
+        return {} as AxiosResponse
+       })
+      endpointManager.set('alice-usd', endpoint)
+      endpointManager.set('alice-xof', endpoint)
+
+      const res = await httpServer.inject({
+        method: 'put',
+        url: '/alice/quotes/' + postQuoteMessage.quoteId + '/error',
+        payload: errorMessage,
+        headers
+      })
+
+      assert.equal(res.statusCode, 202)
+      sinon.assert.calledWith(getSpy, 'alice-usd')
     })
   })
 })

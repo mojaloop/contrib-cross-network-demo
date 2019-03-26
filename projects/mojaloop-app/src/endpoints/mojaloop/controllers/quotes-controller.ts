@@ -9,7 +9,8 @@ const logger = log.child({ component: 'Quotes-Controller' })
 export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received post from ' + request.path, { data: request.payload, headers: request.headers })
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const currency = (request.payload as QuotesPostRequest).amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
 
     const quotesPostRequest: MojaloopHttpRequest = {
       headers: request.headers,
@@ -27,7 +28,9 @@ export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received put from ' + request.path, { data: request.payload, headers: request.headers })
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const storedQuote = request.server.methods.getStoredQuoteById(request.params.id)
+    const currency = storedQuote.body.amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
 
     const quotesIdPutRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
@@ -46,7 +49,9 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
 export function show (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received get from ' + request.path, { data: request.payload, headers: request.headers })
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const storedQuote = request.server.methods.getStoredQuoteById(request.params.id)
+    const currency = storedQuote.body.amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const quoteGetRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
       objectType: 'quote',

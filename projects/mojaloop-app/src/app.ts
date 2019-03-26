@@ -51,7 +51,7 @@ export class App {
       logger.info(request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer)
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this._getStoredTransferById.bind(this), getStoredQuoteById: this._getStoredTransferById.bind(this) })
   }
 
   public async start (): Promise<void> {
@@ -216,6 +216,14 @@ export class App {
     }
 
     return [...appRules, ...peerInfo.rules].map(instantiateRule)
+  }
+
+  private _getStoredTransferById (id: string): RequestMapEntry | undefined {
+    return this._transferRequestEntryMap.get(id)
+  }
+
+  private _getStoredQuoteById (id: string): RequestMapEntry | undefined {
+    return this._quoteRequestEntryMap.get(id)
   }
 
 }

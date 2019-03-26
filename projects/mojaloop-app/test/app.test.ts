@@ -15,12 +15,22 @@ const assert = Object.assign(Chai.assert, sinon.assert)
 describe('Mojaloop CNP App', function () {
 
   let app: App
-  const peerInfo: PeerInfo = {
-    id: 'alice',
+  const aliceUsdPeerInfo: PeerInfo = {
+    id: 'alice-usd',
     relation: 'peer',
     mojaAddress: 'moja.alice',
     url: 'http://localhost:1081',
     assetCode: 'USD',
+    assetScale: 2,
+    rules: []
+  }
+
+  const aliceXofPeerInfo: PeerInfo = {
+    id: 'alice-xof',
+    relation: 'peer',
+    mojaAddress: 'moja.alice',
+    url: 'http://localhost:1080',
+    assetCode: 'XOF',
     assetScale: 2,
     rules: []
   }
@@ -137,9 +147,9 @@ describe('Mojaloop CNP App', function () {
 
   describe('addPeer', function () {
     it('creates and stores the mojaloop endpoint for the peer', async function () {
-      await app.addPeer(peerInfo)
+      await app.addPeer(aliceUsdPeerInfo)
 
-      assert.instanceOf(app.getPeerEndpoint(peerInfo.id), MojaloopHttpEndpoint)
+      assert.instanceOf(app.getPeerEndpoint(aliceUsdPeerInfo.id), MojaloopHttpEndpoint)
     })
 
   })
@@ -152,8 +162,8 @@ describe('Mojaloop CNP App', function () {
         headers: {'fspiop-destination': 'moja.bob'},
         body: {}
       }
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
-      await app.addPeer(peerInfo, endpoint)
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       // force bob to be in routing table
       app.routeManager.addPeer('bob', 'peer')
       app.routeManager.addRoute({
@@ -173,13 +183,13 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer post requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -191,13 +201,13 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote post requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -209,13 +219,13 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote put error requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -227,13 +237,13 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer put error requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -245,7 +255,7 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing transfer get requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       const getTransferRequest: MojaloopHttpRequest = {
         objectId: '1',
@@ -255,9 +265,9 @@ describe('Mojaloop CNP App', function () {
       }
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -269,7 +279,7 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('sets fspiop-source as its own address and fspiop-destination to nextHop for outgoing quote get requests', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       const getQuoteRequest: MojaloopHttpRequest = {
         objectId: '1',
@@ -279,9 +289,9 @@ describe('Mojaloop CNP App', function () {
       }
       
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -293,7 +303,7 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('uses headers from transfer post request to update fspiop-source and fspiop-destination headers for transfer put request', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       const putTransferMessage: TransfersIDPutResponse = {
         transferState: 'COMMITTED'
@@ -304,9 +314,9 @@ describe('Mojaloop CNP App', function () {
         body: putTransferMessage
       }
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -328,7 +338,7 @@ describe('Mojaloop CNP App', function () {
     })
 
     it('uses headers from quote post request to update fspiop-source and fspiop-destination headers for quote put request', async function () {
-      const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+      const endpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
       const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
       const quotePutMessage: QuotesIDPutResponse = {
         condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
@@ -345,9 +355,9 @@ describe('Mojaloop CNP App', function () {
         body: quotePutMessage
       }
       app.setMojaAddress('moja.cnp')
-      await app.addPeer(peerInfo, endpoint)
+      await app.addPeer(aliceUsdPeerInfo, endpoint)
       app.routeManager.addRoute({
-        peer: 'alice',
+        peer: 'alice-usd',
         prefix: 'moja.fred',
         path: []
       })
@@ -371,15 +381,14 @@ describe('Mojaloop CNP App', function () {
   })
 
   it('can return a key-value mapping of peers and peer infos', async function () {
-    await app.addPeer(peerInfo)
+    await app.addPeer(aliceUsdPeerInfo)
 
     const peers = app.getPeers()
 
-    assert.deepEqual(peers, { 'alice': peerInfo })
+    assert.deepEqual(peers, { 'alice-usd': aliceUsdPeerInfo })
   })
 
   it('can forward a packet', async function () {
-    const transferId = uuid()
     const headers = {
       'fspiop-source': 'bob',
       'content-type': 'application/vnd.interoperability.transfers+json;version=1.0',
@@ -387,7 +396,20 @@ describe('Mojaloop CNP App', function () {
       'fspiop-destination': 'moja.alice',
       'date': "Thu, 14 Mar 2019 09:07:54 GMT"
     }
-    const endpoint = new MojaloopHttpEndpoint({ url: peerInfo.url })
+    const postMessage: TransfersPostRequest = {
+      transferId: uuid(),
+      payeeFsp: 'bob',
+      payerFsp: 'alice',
+      amount: {
+        amount: '100',
+        currency: 'USD'
+      },
+      condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
+      expiration: '2016-05-24T08:38:08.699-04:00',
+      ilpPacket: 'testpacket'
+    }
+    const usdEndpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
+    const xofEndpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
     const axios202Response: AxiosResponse = {
       data: {},
       status: 202,
@@ -395,22 +417,26 @@ describe('Mojaloop CNP App', function () {
       headers: {},
       config: {}
     }
-    const endpointSendStub = sinon.stub(endpoint, 'sendOutgoingRequest').resolves(axios202Response)
+    const usdEndpointSendStub = sinon.stub(usdEndpoint, 'sendOutgoingRequest').resolves(axios202Response)
+    const xofEndpointSendStub = sinon.stub(xofEndpoint, 'sendOutgoingRequest').resolves(axios202Response)
     await app.start()
-    await app.addPeer(peerInfo, endpoint)
+    app.setMojaAddress('moja.super-remit')
+    await app.addPeer(aliceUsdPeerInfo, usdEndpoint)
+    await app.addPeer(aliceXofPeerInfo, xofEndpoint)
 
-    const response = await axios.get(`http://0.0.0.0:1080/alice/transfers/${transferId}`, { headers }) 
+    const response = await axios.post(`http://0.0.0.0:1080/alice/transfers`, postMessage, { headers })
 
-    const endpointSendArg = endpointSendStub.getCall(0).args[0]
-    sinon.assert.calledOnce(endpointSendStub)
-    assert.equal(endpointSendArg.objectId, transferId)
-    assert.equal(endpointSendArg.objectType, 'transfer')
-    assert.deepEqual(endpointSendArg.body, {})
+    const endpointSendArg = usdEndpointSendStub.getCall(0).args[0]
+    sinon.assert.calledOnce(usdEndpointSendStub)
+    sinon.assert.notCalled(xofEndpointSendStub)
+    assert.deepEqual(endpointSendArg.body, postMessage)
+    assert.deepEqual(endpointSendArg.headers['fspiop-source'], 'moja.super-remit')
+    assert.deepEqual(endpointSendArg.headers['fspiop-destination'], 'moja.alice')
   })
 
   it('adds track-requests rule by default', async function () {
-    await app.addPeer(peerInfo)
+    await app.addPeer(aliceUsdPeerInfo)
 
-    assert.include(app.getPeerRules(peerInfo.id).map(rule => rule.constructor.name), 'TrackRequestsRule')
+    assert.include(app.getPeerRules(aliceUsdPeerInfo.id).map(rule => rule.constructor.name), 'TrackRequestsRule')
   })
 })

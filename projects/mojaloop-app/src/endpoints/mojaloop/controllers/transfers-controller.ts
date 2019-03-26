@@ -10,9 +10,11 @@ export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received post from ' + request.path, { data: request.payload, headers: request.headers })
     if (!isTransferPostMessage(request.payload as MojaloopMessage)) {
+      logger.error('Could not turn payload into transfer post request.')
       throw new Error('Could not turn payload into transfer post request.')
     }
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const currency = (request.payload as TransfersPostRequest).amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferPostHttpRequest: MojaloopHttpRequest = {
       headers: request.headers,
       body: request.payload as TransfersPostRequest
@@ -34,7 +36,9 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
       throw new Error('Could not turn payload into transfer put request.')
     }
 
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const storedTransfer = request.server.methods.getStoredTransferById(request.params.id)
+    const currency = storedTransfer.body.amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferPutHttpRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
       headers: request.headers,
@@ -53,7 +57,9 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
 export function show (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received get from ' + request.path, { data: request.payload, headers: request.headers })
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const storedTransfer = request.server.methods.getStoredTransferById(request.params.id)
+    const currency = storedTransfer.body.amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferGetRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
       objectType: 'transfer',

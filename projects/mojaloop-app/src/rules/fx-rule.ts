@@ -1,8 +1,8 @@
 import { Rule, MojaloopRequestHandler } from '../types/rule'
 import { log } from '../winston'
 import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPostMessage, isQuotePostMessage, isQuotePutMessage, isTransferPutMessage, isQuotePutErrorRequest, isTransferPutErrorRequest } from '../types/mojaloop-packets'
-import { Money } from '../types/mojaloop-models/money';
-import { AmountType } from '../types/mojaloop-models/models';
+import { Money } from '../types/mojaloop-models/money'
+import { AmountType } from '../types/mojaloop-models/models'
 const logger = log.child({ component: 'fx-rule' })
 
 export interface ForeignExchangeRuleOptions {

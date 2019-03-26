@@ -9,7 +9,9 @@ const logger = log.child({ component: 'Transfers-Error-Controller' })
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received put from ' + request.path, { data: request.payload, headers: request.headers })
-    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId)
+    const storedTransfer = request.server.methods.getStoredTransferById(request.params.id)
+    const currency = storedTransfer.body.amount.currency
+    const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferErrorPutHttpRequest: MojaloopHttpRequest = {
       objectId: request.params.id,
       objectType: 'transfer',

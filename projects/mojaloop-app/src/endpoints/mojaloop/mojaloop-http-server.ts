@@ -2,22 +2,30 @@ import * as hapi from 'hapi'
 import { MojaloopHttpEndpoint } from './mojaloop-http'
 import { TransferRoutes } from './routes/transfer-routes'
 import { QuotesRoutes } from './routes/quotes-routes'
+import { RequestMapEntry } from '../../rules/track-requests-rule'
+
+export interface EndpointManagerServices {
+  getStoredTransferById: (id: string) => RequestMapEntry | undefined
+  getStoredQuoteById: (id: string) => RequestMapEntry | undefined
+}
 
 export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoint> {
 
-  constructor (server: hapi.Server) {
+  constructor (server: hapi.Server, services: EndpointManagerServices) {
     super()
 
     server.method('getEndpoint', this.getEndpoint.bind(this))
+    server.method('getStoredTransferById', services.getStoredTransferById)
+    server.method('getStoredQuoteById', services.getStoredQuoteById)
 
     const routes: hapi.ServerRoute[] = [...TransferRoutes, ...QuotesRoutes]
     routes.forEach(route => server.route(route))
   }
 
-  getEndpoint (peerId: string): MojaloopHttpEndpoint {
-    const endpoint = this.get(peerId)
+  getEndpoint (participantId: string, currency: string): MojaloopHttpEndpoint {
+    const endpoint = this.get(participantId + '-' + currency.toLowerCase())
     if (!endpoint) {
-      throw new Error(`No endpoint found for peerId=${peerId}`)
+      throw new Error(`No endpoint found for participantId=${participantId} and currency=${currency}`)
     }
     return endpoint
   }

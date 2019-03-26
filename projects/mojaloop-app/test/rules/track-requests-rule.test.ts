@@ -139,6 +139,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(transferRequestEntryMap.get(transferId), {
       headers,
+      body: postTransferRequest.body,
       sentPut: false
     })    
   })
@@ -150,6 +151,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
       headers,
+      body: postQuoteRequest.body,
       sentPut: false
     })    
   })
@@ -161,6 +163,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
       headers,
+      body: putQuoteErrorRequest.body,
       sentPut: false
     })    
   })
@@ -172,6 +175,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
       headers,
+      body: putTransferErrorRequest.body,
       sentPut: false
     })    
   })
@@ -179,6 +183,7 @@ describe('Store post request entry', function () {
   it('updates request entry for outgoing transfer put request', async function () {
     transferRequestEntryMap.set(transferId, {
       headers,
+      body: putTransferRequest.body,
       sentPut: false
     })
 
@@ -186,6 +191,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(transferRequestEntryMap.get(transferId), {
       headers,
+      body: putTransferRequest.body,
       sentPut: true
     })
   })
@@ -193,6 +199,7 @@ describe('Store post request entry', function () {
   it('updates request entry for outgoing quote put request', async function () {
     quoteRequestEntryMap.set(quoteId, {
       headers,
+      body: putQuoteRequest.body,
       sentPut: false
     })
 
@@ -200,6 +207,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
       headers,
+      body: putQuoteRequest.body,
       sentPut: true
     })
   })
@@ -207,6 +215,7 @@ describe('Store post request entry', function () {
   it('updates request entry for outgoing transfer put error  request', async function () {
     transferErrorRequestEntryMap.set(transferId, {
       headers,
+      body: putTransferErrorRequest.body,
       sentPut: false
     })
 
@@ -214,6 +223,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
       headers,
+      body: putTransferErrorRequest.body,
       sentPut: true
     })
   })
@@ -221,6 +231,7 @@ describe('Store post request entry', function () {
   it('updates request entry for outgoing quote put error  request', async function () {
     quoteErrorRequestEntryMap.set(quoteId, {
       headers,
+      body: putQuoteErrorRequest.body,
       sentPut: false
     })
 
@@ -228,6 +239,7 @@ describe('Store post request entry', function () {
 
     assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
       headers,
+      body: putQuoteErrorRequest.body,
       sentPut: true
     })
   })
