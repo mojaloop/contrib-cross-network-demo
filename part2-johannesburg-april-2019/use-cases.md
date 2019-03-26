@@ -1,75 +1,143 @@
-# In-Network FX
+# Use Cases for multi-hop routing
 
-## Use Case: Alice (USD) at Blue Mobile sends money to Bob (XOF) at Red Mobile
+## Use Case 1: Alice at Blue Mobile sends a fixed amount (5 USD) to Bob at Red Mobile
 
  - Blue Mobile and Red Mobile are on the same network and connected to the same Mojaloop switch.
- - Alice wishes to send money to Bob. 
  - Alice is unaware of the currencies that Bob is able to receive.
+ - Bob only has an account able to receive XOF
+ - There is an FX provider (FXP) on the network that can provide the FX
 
-**Constraints:** 
+### Step 1 : Lookup
 
-  1. In order to give Alice a complete quote, Blue Mobile must know the currency that Bob will receive.  
-i.e. Blue Mobile needs to prompt Alice:  "If you send 10 USD, Bob will receive 12 XOF after fees and commissions."
-  2. In order to correctly route a quote or transfer the switch must know:
-      1. if the incoming quote/transfer is the same currency and the destination account
-      2. if the destination DFSP is able to perform FX
+Blue Mobile issues a `/parties` lookup to the hub and gets back a response:
 
-## Use Case 1: Alice sends a fixed amount (5 USD) to Bob using current API
+- `Party.Name`: Bob
+- `Party.PartyIdInfo.PartyIdType`: MSISDN
+- `Party.PartyIdInfo.PartyIdentifier`: 279862387676253
+- `Party.PartyIdInfo.FspId`: red-mobile
 
-### Lookup
+**Constraint 1:** There is no way through the `/participants` or `/parties` API for Blue Mobile to discover that Red Mobile only accepts XOF.
 
+**Constraint 2:** The best Blue Mobile can do is call the `/participants` API with a `currency` filter of `USD` to determine that Red Mobile **does not** accept USD.
 
-Blue Mobile issues a `/parties` lookup to the hub.
-Relevant response details:
-- Party.PartyIdInfo.PartyIdType: `MSISDN`
-- Party.PartyIdInfo.PartyIdentifier: `279862387676253`
-- Party.PartyIdInfo.FspId: `red`
+Blue Mobile does not do FX so let's assume it sends a quote to the switch with no `FSPIOP-Destination` header hoping the hub can route the quote via an appropriate FX provider to Red Mobile.
 
-Through the `/participants` API Blue Mobile discovers that Red Mobile only accepts XOF.
+### Step 2: Quote
 
-Blue Mobile does not do FX so it sends a quote to the hub with no `FSPIOP-Destination` hoping the hub can route the quote to an appropriate FX provider.
+Blue Mobile sends a quote for payment of USD 5 to Bob to the switch with no `FSPIOP-Destination`
 
-## Quote
+ - Header: `FSPIOP-Source`: blue-mobile
+ - `Party.PartyIdInfo.PartyIdType`: MSISDN
+ - `Party.PartyIdInfo.PartyIdentifier`: 279862387676253
+ - `Party.PartyIdInfo.FspId`: red-mobile
+ - `AmountType`: SEND
+ - `Amount`: USD 5
 
-Alice requests Quote for payment of USD 5 to Bob by sending quote to hub with no `FSPIOP-Destination`
- - Payee: Bob
- - AmountType: SEND
- - Amount: USD 5
+The switch has no `FSPIOP-Destination` header to route by so it must look at the `payee`. It identifies the destination FSP as Red Mobile.
 
-The hub must routes the quote to an FXP.
-  - **Question 1:** How does the hub determine that this quote must go to the FXP rather than directly to Red Mobile? The only hint is the currency of the send amount but this assumes the hub knows that Red Mobile doesn't accept that currency.
-  - **Question 2:** What data elements change in the quote message sent to the FXP? Does the hub add an `FSPIOP-Destination` header?
+**Constraint 3:** In order to determine that the quote should be routed to the FXP the switch must know that Red Mobile won't accept the quote in USD (and analyse the quote to determine the sending currency). 
 
-The FXP accepts the quote and note that it is receiving USD (from `amount` data element in the quote)
+**Constraint 4:** In the case where there are multiple FX providers offering different conversion for different currency pairs the switch MUST know the currencies Bob can accept payment in or it is unable to determine which FX providers are suitable. 
+
+Assuming the switch has determined correctly that the quote goes to the FXP, it sends the quote on.
+
+ - Header: `FSPIOP-Source`: blue-mobile
+ - Header: `FSPIOP-Destination`: fxp
+ - `Party.PartyIdInfo.PartyIdType`: MSISDN
+ - `Party.PartyIdInfo.PartyIdentifier`: 279862387676253
+ - `Party.PartyIdInfo.FspId`: red-mobile
+ - `AmountType`: SEND
+ - `Amount`: USD 5
+
+**Constraint 5:** The payee FSP for this leg of the quote is no longer Red Mobile, it is the FXP. Should the switch set the `FSPIOP-Destination` header in the message to the FXP? Should this header value be `fxp` or `red-mobile`?
+
+The FXP accepts the quote and notes that it is receiving USD (from `amount` data element in the quote) from Blue Mobile.
 
 The FXP needs to determine the destination currency to apply the conversion.
 
-  - **Question 3:** How does the FXP determine the destination currency? The best data it has to work with is the `payee` data element.
+**Constraint 6:** How does the FXP determine the destination currency? The best data it has to work with is the `payee` data element. As with the switch the FXP must determine the currency that Bob can accept payment in.
 
-FXP sends quote to Red Mobile (via hub)
- - Payee: Bob
- - AmountType: SEND
- - Amount: XOF 1000 (Conversion from 5 USD with fees and commissions applied)
+The FXP converts 5 USD that is will receive from Blue Mobile to 1000 XOF.
 
-Red Mobile responds:
- - TransferAmount: XOF 1000
- - PayeeReceiveAmount: XOF 990
- - PayeeFspFee: XOF 3
- - PayeeFspCommission: XOF 7
+It subtracts 5 XOF commission.
 
-FXP responds to Blue Mobile
- - TransferAmount: USD 5
- - PayeeReceiveAmount: XOF 990
- - PayeeFspFee: XOF 3
- - PayeeFspCommission: XOF 7
+FXP sends a quote to Red Mobile (via the switch)
+ - Header: `FSPIOP-Source`: fxp
+ - Header: `FSPIOP-Destination`: red-mobile
+ - `Party.PartyIdInfo.PartyIdType`: MSISDN
+ - `Party.PartyIdInfo.PartyIdentifier`: 279862387676253
+ - `Party.PartyIdInfo.FspId`: red-mobile
+ - `AmountType`: **SEND**
+ - `Amount`: **XOF 995**
 
-  - **Question 4:** How does the FXP provide details to Blue Mobile on the FX, feeds and commissions?
+Red Mobile constructs a `Transaction` object with the details of the payer and payee from the quote. This is used to derive the condition and fulfillment.
 
+**Constraint 6:** The `Transaction` is missing the details of the FXP that is acting as an intermediary and the FX rate, commission and fees agreed in the quote. As such these are not part of the data used to generate the fulfillment and condition.
+
+Red Mobile sends the callback to the FXP (via the switch):
+ - Header: `FSPIOP-Source`: red-mobile
+ - Header: `FSPIOP-Destination`: fxp
+ - `TransferAmount`: **XOF 995**
+ - `PayeeReceiveAmount`: XOF 990
+ - `PayeeFspFee`: XOF 3
+ - `PayeeFspCommission`: XOF 2
+ - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
+
+The FXP sends the callback to Blue Mobile (via the switch):
+ - Header: `FSPIOP-Source`: **fxp**
+ - Header: `FSPIOP-Destination`: blue-mobile
+ - `TransferAmount`: **USD 5**
+ - `PayeeReceiveAmount`: XOF 990
+ - `PayeeFspFee`: XOF 3
+ - `PayeeFspCommission`: XOF 7
+ - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
+
+**Constraint 7:** The FXP has no way to provide details to Blue Mobile on the FX, fees and commissions?
+
+### Step 3: Transfer
+
+Blue Mobile prompts Alice:
+"Send 5 USD to Bob who will receive 990 XOF after fees and commission?"
+
+Alice proceeds and a transfer is sent by Blue Mobile to FXP
+ - Header: `FSPIOP-Source`: blue-mobile
+ - Header: `FSPIOP-Destination`: **fxp**
+ - `Amount`: **USD 5**
+ - `PayeeFsp`: red-mobile
+ - `PayerFsp`: blue-mobile
+ - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
+
+FXP receives the incoming transfer and determines that an outgoing transfer must be made to Red Mobile.
+
+**Constraint 8:** The route for the outgoing transfer and the rate to apply can only be determined by looking up the quote using the quote id which is buried in the transaction object inside the ILP packet. (There is a proposal to remove the packet from the transfer and put the `Transaction` object in its place which would solve for this).
+
+ - Header: `FSPIOP-Source`: fxp
+ - Header: `FSPIOP-Destination`: red-mobile
+ - `Amount`: **XOF 995**
+ - `PayeeFsp`: red-mobile
+ - `PayerFsp`: blue-mobile
+ - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
+
+Red Mobile fulfills the transfer from the FXP
+
+ - Header: `FSPIOP-Source`: red-mobile
+ - Header: `FSPIOP-Destination`: fxp
+ - `Fulfillment`: 98heygf8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `TransferState`: COMMITTED
+
+The FXP fulfills the transfer from Blue Mobile
+
+ - Header: `FSPIOP-Source`: fxp
+ - Header: `FSPIOP-Destination`: blue-mobile
+ - `Fulfillment`: 98heygf8uuyiuglwiyuefdouwtfdlwihevfluyf
+ - `TransferState`: COMMITTED
 
 
 ## Notes
-
-- Does Alice's DFSP discover the receiving currency during the lookup or during the quote?
 
  - Red Mobile could return a list of supported currencies in the `/parties` response. See API change proposal [here](./api-changes.md) for details. This would allow Blue Mobile to make early UX determinations with regard to how they prompt Alice to continue with the transaction. E.g. Bob only accepts XOF, do you want to continue? Do you want to send a fixed XOF amount or a fixed USD amount?
 
@@ -78,3 +146,4 @@ FXP responds to Blue Mobile
   - If Alice's DFSP is able to send in multiple currencies should they be able to apply the FX before sending?
 
   - Is it sufficient to simply know which currencies **Bob's DFSP** accepts or is it necessary to know currencies Bob has accounts in?
+
