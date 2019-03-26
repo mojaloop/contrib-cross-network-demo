@@ -57,9 +57,9 @@ The FXP needs to determine the destination currency to apply the conversion.
 
 **Constraint 1.6:** How does the FXP determine the destination currency? The best data it has to work with is the `payee` data element. As with the switch the FXP must determine the currency that Bob can accept payment in.
 
-The FXP converts 5 USD that is will receive from Blue Mobile to 1000 XOF.
+The FXP converts 5 USD that it will receive from Blue Mobile to 1000 XOF.
 
-It subtracts 5 XOF commission.
+It subtracts a 5 XOF fee.
 
 FXP sends a quote to Red Mobile (via the switch)
  - Header: `FSPIOP-Source`: fxp
