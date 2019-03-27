@@ -37,7 +37,7 @@ describe('Mojaloop CNP App', function () {
 
   const headers = {
     'fspiop-source': 'moja.bob',
-    'fspiop-address': 'moja.fred',
+    'fspiop-account': 'moja.fred',
     'date': new Date(Date.now()).toUTCString(),
     'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
   }
@@ -323,7 +323,7 @@ describe('Mojaloop CNP App', function () {
       await endpoint.handleIncomingRequest({
         headers: {
           'fspiop-source': 'moja.bob',
-          'fspiop-address': 'moja.fred',
+          'fspiop-account': 'moja.fred',
           'date': new Date(Date.now()).toUTCString(),
           'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
         },
@@ -365,7 +365,7 @@ describe('Mojaloop CNP App', function () {
       await endpoint.handleIncomingRequest({
         headers: {
           'fspiop-source': 'moja.bob',
-          'fspiop-address': 'moja.fred',
+          'fspiop-account': 'moja.fred',
           'date': new Date(Date.now()).toUTCString(),
           'content-type': 'application/vnd.interoperability.transfers+json;version=1.0'
         },
@@ -432,6 +432,7 @@ describe('Mojaloop CNP App', function () {
     assert.deepEqual(endpointSendArg.body, postMessage)
     assert.deepEqual(endpointSendArg.headers['fspiop-source'], 'moja.super-remit')
     assert.deepEqual(endpointSendArg.headers['fspiop-destination'], 'moja.alice')
+    assert.deepEqual(endpointSendArg.headers['date'], 'Thu, 14 Mar 2019 09:07:54 GMT')
   })
 
   it('adds track-requests rule by default', async function () {

@@ -51,7 +51,7 @@ export class App {
       logger.info(request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this._getStoredTransferById.bind(this), getStoredQuoteById: this._getStoredTransferById.bind(this) })
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this._getStoredTransferById.bind(this), getStoredQuoteById: this._getStoredQuoteById.bind(this) })
   }
 
   public async start (): Promise<void> {
@@ -141,7 +141,7 @@ export class App {
   }
 
   public async sendOutgoingRequest (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> {
-    const destination = request.headers['fspiop-address'] ? request.headers['fspiop-address'] : request.headers['fspiop-destination']
+    const destination = request.headers['fspiop-account'] ? request.headers['fspiop-account'] : request.headers['fspiop-destination']
     const nextHop = this.routingTable.nextHop(destination)
     const handler = this._outgoingRequestHandlers.get(nextHop)
 
@@ -158,22 +158,22 @@ export class App {
   }
 
   private _updateRequestHeaders (request: MojaloopHttpRequest) {
-    let newHeaders = Object.assign({}, request.headers)
+    let newHeaders = Object.assign({}, request.headers, { 'date': new Date(request.headers['date']).toUTCString() })
 
     if (isTransferPostMessage(request.body) || isQuotePostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) {
-      const destination = request.headers['fspiop-address'] ? request.headers['fspiop-address'] : request.headers['fspiop-destination']
+      const destination = request.headers['fspiop-account'] ? request.headers['fspiop-account'] : request.headers['fspiop-destination'] // TODO: is this the case?
       const nextHopInfo = this.getPeerInfo(this.routingTable.nextHop(destination))
-      newHeaders = Object.assign({}, request.headers, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': nextHopInfo.mojaAddress })
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': nextHopInfo.mojaAddress })
     } else if (isTransferPutMessage(request.body)) {
       const requestEntry = this._transferRequestEntryMap.get(request.objectId || '')
       if (requestEntry) {
-        newHeaders = Object.assign({}, request.headers, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
       }
       logger.info('Updating headers for transfer put request', { oldHeaders: request.headers, newHeaders, requestEntry })
     } else if (isQuotePutMessage(request.body)) {
       const requestEntry = this._quoteRequestEntryMap.get(request.objectId || '')
       if (requestEntry) {
-        newHeaders = Object.assign({}, request.headers, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
       }
       logger.info('Updating headers for quote put request', { oldHeaders: request.headers, newHeaders, requestEntry })
     }
