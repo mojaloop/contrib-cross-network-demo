@@ -20,8 +20,7 @@ export class ForeignExchangeRule extends Rule {
 
   constructor ({ convertAmount }: ForeignExchangeRuleOptions) {
     super({
-      processIncoming: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
-
+      processOutgoing: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
         if (isTransferPostMessage(request.body)) {
           const incomingAmount = request.body.amount
           const convertedAmount = convertAmount(incomingAmount) // TODO: Get original QuoteID from the Transaction object
@@ -32,13 +31,7 @@ export class ForeignExchangeRule extends Rule {
           const convertedAmount = convertAmount(incomingAmount, request.body.quoteId)
           request.body.amount = convertedAmount
           logger.debug('applied FX conversion to quote', { incomingAmount, convertedAmount })
-        }
-        return next(request)
-      },
-
-      processOutgoing: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
-
-        if (isQuotePutMessage(request.body)) {
+        } else if (isQuotePutMessage(request.body)) {
           const incomingAmount = request.body.transferAmount
           const convertedAmount = convertAmount(incomingAmount)
           request.body.transferAmount = convertedAmount

@@ -8,6 +8,8 @@ import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPostMessage, isQuoteP
 import { log } from './winston'
 import { Router as RoutingTable, RouteManager } from 'ilp-routing'
 import { TrackRequestsRule, RequestMapEntry } from './rules/track-requests-rule'
+import { Money } from './types/mojaloop-models/money'
+import { ForeignExchangeRule } from './rules/fx-rule'
 
 const logger = log.child({ component: 'app' })
 
@@ -200,6 +202,27 @@ export class App {
       { name: 'track-requests' }
     ]
 
+    // conversion function for the foregin exchange rule.
+    const convertAmount = (incomingAmount: Money, quoteId?: string): Money => {
+      const usdToXofExchangeRate = 579.59
+      if (incomingAmount.currency === peerInfo.assetCode) {
+        return incomingAmount
+      } else if (incomingAmount.currency.toLowerCase() === 'usd' && peerInfo.assetCode.toLowerCase() === 'xof') { // usd -> xof
+        return {
+          amount: (Number(incomingAmount.amount) * usdToXofExchangeRate).toString(),
+          currency: 'XOF'
+        }
+      } else if (incomingAmount.currency.toLowerCase() === 'xof' && peerInfo.assetCode.toLowerCase() === 'usd') { // xof -> usd
+        return {
+          amount: (Number(incomingAmount.amount) / usdToXofExchangeRate).toString(),
+          currency: 'USD'
+        }
+      } else {
+        logger.error('Exchange rule can only convert from USD <-> XOF.', { incomingCurrency: incomingAmount.currency, peerCurrency: peerInfo.assetCode })
+        throw new Error(`Exchange rule can only convert from USD <-> XOF. incoming currency=${incomingAmount.currency}, peer currency=${peerInfo.assetCode}`)
+      }
+    }
+
     const instantiateRule = (rule: RuleConfig): Rule => {
       switch (rule.name) {
         case('track-requests'):
@@ -209,6 +232,8 @@ export class App {
             transferErrorRequestEntryMap: this._transferErrorRequestEntryMap,
             transferRequestEntryMap: this._transferRequestEntryMap
           })
+        case('foreign-exchange'):
+          return new ForeignExchangeRule({ convertAmount })
         default:
           logger.error(`Rule ${rule.name} is not supported`, { peerInfo })
           throw new Error(`Rule ${rule.name} undefined`)

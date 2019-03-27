@@ -22,7 +22,9 @@ describe('Mojaloop CNP App', function () {
     url: 'http://localhost:1081',
     assetCode: 'USD',
     assetScale: 2,
-    rules: []
+    rules: [{
+      name: 'foreign-exchange'
+    }]
   }
 
   const aliceXofPeerInfo: PeerInfo = {
@@ -32,7 +34,9 @@ describe('Mojaloop CNP App', function () {
     url: 'http://localhost:1080',
     assetCode: 'XOF',
     assetScale: 2,
-    rules: []
+    rules: [{
+      name: 'foreign-exchange'
+    }]
   }
 
   const headers = {
@@ -440,4 +444,114 @@ describe('Mojaloop CNP App', function () {
 
     assert.include(app.getPeerRules(aliceUsdPeerInfo.id).map(rule => rule.constructor.name), 'TrackRequestsRule')
   })
+
+  describe('currency conversion', function () {
+    const bobUsdPeerInfo: PeerInfo = {
+      id: 'bob-usd',
+      assetCode: 'USD',
+      assetScale: 2,
+      mojaAddress: 'moja.bob',
+      relation: 'peer',
+      url: 'http:localhost:1082',
+      rules: [{
+        name: 'foreign-exchange'
+      }]
+    }
+    const usdEndpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
+    const xofEndpoint = new MojaloopHttpEndpoint({ url: aliceUsdPeerInfo.url })
+    const axios202Response: AxiosResponse = {
+      data: {},
+      status: 202,
+      statusText: '',
+      headers: {},
+      config: {}
+    }
+    let xofEndpointSendStub: sinon.SinonStub
+    let usdEndpointSendStub: sinon.SinonStub
+
+    beforeEach(async function () {
+      await app.start()
+      app.setMojaAddress('moja.super-remit')
+      await app.addPeer(bobUsdPeerInfo, usdEndpoint)
+      await app.addPeer(aliceXofPeerInfo, xofEndpoint)
+
+      xofEndpointSendStub = sinon.stub(xofEndpoint, 'sendOutgoingRequest').resolves(axios202Response)
+      usdEndpointSendStub = sinon.stub(usdEndpoint, 'sendOutgoingRequest').resolves(axios202Response)
+    })
+
+    afterEach(function () {
+      xofEndpointSendStub.restore()
+      usdEndpointSendStub.restore()
+    })
+
+    it('converts USD to XOF using exchage rate of 579.59 for a transfer when fx rule is applied', async function () {
+      const headers = {
+        'fspiop-source': 'bob',
+        'content-type': 'application/vnd.interoperability.transfers+json;version=1.0',
+        'accept': 'application/vnd.interoperability.transfers+json;version=1.0',
+        'fspiop-account': 'moja.alice.xof',
+        'date': "Thu, 14 Mar 2019 09:07:54 GMT"
+      }
+      const postMessage: TransfersPostRequest = {
+        transferId: uuid(),
+        payeeFsp: 'bob',
+        payerFsp: 'alice',
+        amount: {
+          amount: '100',
+          currency: 'USD'
+        },
+        condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
+        expiration: '2016-05-24T08:38:08.699-04:00',
+        ilpPacket: 'testpacket'
+      }
+      await app.start()
+      app.setMojaAddress('moja.super-remit')
+      await app.addPeer(bobUsdPeerInfo, usdEndpoint)
+      await app.addPeer(aliceXofPeerInfo, xofEndpoint)
+  
+      await axios.post(`http://0.0.0.0:1080/bob/transfers`, postMessage, { headers })
+  
+      const endpointSendArg = xofEndpointSendStub.getCall(0).args[0]
+      sinon.assert.calledOnce(xofEndpointSendStub)
+      assert.deepEqual(endpointSendArg.body['amount'], {
+        currency: 'XOF',
+        amount: '57959'
+      })
+    })
+
+    it('converts XOF to USD using exchage rate of 579.59 for a transfer when fx rule is applied', async function () {
+      const headers = {
+        'fspiop-source': 'alice',
+        'content-type': 'application/vnd.interoperability.transfers+json;version=1.0',
+        'accept': 'application/vnd.interoperability.transfers+json;version=1.0',
+        'fspiop-account': 'moja.bob.usd',
+        'date': "Thu, 14 Mar 2019 09:07:54 GMT"
+      }
+      const postMessage: TransfersPostRequest = {
+        transferId: uuid(),
+        payeeFsp: 'alice',
+        payerFsp: 'bob',
+        amount: {
+          amount: '57959',
+          currency: 'XOF'
+        },
+        condition: 'f5sqb7tBTWPd5Y8BDFdMm9BJR_MNI4isf8p8n4D5pHA',
+        expiration: '2016-05-24T08:38:08.699-04:00',
+        ilpPacket: 'testpacket'
+      }
+      await app.start()
+      app.setMojaAddress('moja.super-remit')
+      await app.addPeer(bobUsdPeerInfo, usdEndpoint)
+      await app.addPeer(aliceXofPeerInfo, xofEndpoint)
+  
+      await axios.post(`http://0.0.0.0:1080/alice/transfers`, postMessage, { headers })
+  
+      const endpointSendArg = usdEndpointSendStub.getCall(0).args[0]
+      sinon.assert.calledOnce(usdEndpointSendStub)
+      assert.deepEqual(endpointSendArg.body['amount'], {
+        currency: 'USD',
+        amount: '100'
+      })
+    })
+  })  
 })
