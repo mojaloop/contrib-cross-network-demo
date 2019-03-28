@@ -31,6 +31,7 @@ describe('FX Rule', function () {
         currency
       },
       amountType,
+      transferCurrency: currency,
       payee: {
         partyIdInfo: {
           partyIdType: '1',
@@ -82,6 +83,7 @@ describe('FX Rule', function () {
   function getPostTransferMessage(currency: string): TransfersPostRequest {
     return {
       transferId,
+      quoteId,
       payeeFsp: 'bobs-fsp',
       payerFsp: 'alices-fsp',
       amount: {

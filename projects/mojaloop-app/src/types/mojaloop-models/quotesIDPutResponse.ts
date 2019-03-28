@@ -18,6 +18,10 @@ import { Money } from './money'
  */
 export interface QuotesIDPutResponse {
   transferAmount: Money
+  /**
+   * Id of the fsp/fxp that the corresponding transfer must be sent to
+   */
+  transferDestination?: string
   payeeReceiveAmount?: Money
   payeeFspFee?: Money
   payeeFspCommission?: Money

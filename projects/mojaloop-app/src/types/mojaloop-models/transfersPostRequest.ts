@@ -20,6 +20,10 @@ export interface TransfersPostRequest {
      * The common ID between the FSPs and the optional Switch for the transfer object, decided by the Payer FSP. The ID should be reused for resends of the same transfer. A new ID should be generated for each new transfer.
      */
   transferId: string
+  /**
+   * Id of the quote that was sent prior to initiating the transfer
+   */
+  quoteId: string
     /**
      * Payee FSP in the proposed financial transaction.
      */

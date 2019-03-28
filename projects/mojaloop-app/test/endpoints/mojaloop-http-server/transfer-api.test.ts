@@ -20,6 +20,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
   let httpServer: hapi.Server
   const postMessage: TransfersPostRequest = {
     transferId: uuid(),
+    quoteId: uuid(),
     payeeFsp: 'bob',
     payerFsp: 'alice',
     amount: {
@@ -51,6 +52,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     return {
       headers,
       body: postMessage,
+      sourcePeerId: 'test-peer',
       sentPut: false
     }
   }
@@ -59,6 +61,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     return {
       headers: {},
       body: {},
+      sourcePeerId: 'test-peer',
       sentPut: false
     }
   }

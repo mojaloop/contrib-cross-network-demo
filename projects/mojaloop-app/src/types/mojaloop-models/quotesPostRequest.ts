@@ -31,6 +31,10 @@ export interface QuotesPostRequest {
      * Identifies an optional previously-sent transaction request.
      */
   transactionRequestId?: string
+  /**
+   * Currency that the transaction should occur in for a specific leg. Needed in the case of fixed RECEIVE.
+   */
+  transferCurrency: string
   payee: Party
   payer: Party
     /**

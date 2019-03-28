@@ -1,12 +1,14 @@
 import { Rule, MojaloopRequestHandler } from '../types/rule'
 import { log } from '../winston'
 import { MojaloopHttpRequest, MojaloopHttpReply, isTransferPostMessage, isQuotePostMessage, isQuotePutMessage, isTransferPutMessage, isQuotePutErrorRequest, isTransferPutErrorRequest } from '../types/mojaloop-packets'
+import { PeerInfo } from '../types/peer'
 const logger = log.child({ component: 'track-request-rule' })
 
 export type RequestMapEntry = {
   headers: { [k: string]: any }
   body: { [k: string]: any }
   sentPut: boolean
+  sourcePeerId: string
 }
 
 export interface TrackRequestRuleOpts {
@@ -14,6 +16,7 @@ export interface TrackRequestRuleOpts {
   transferErrorRequestEntryMap: Map<string, RequestMapEntry>
   quoteRequestEntryMap: Map<string, RequestMapEntry>
   quoteErrorRequestEntryMap: Map<string, RequestMapEntry>
+  peerId: string
 }
 
 export class TrackRequestsRule extends Rule {
@@ -22,13 +25,14 @@ export class TrackRequestsRule extends Rule {
   private _transferErrorRequestEntryMap: Map<string, RequestMapEntry>
   private _quoteRequestEntryMap: Map<string, RequestMapEntry>
   private _quoteErrorRequestEntryMap: Map<string, RequestMapEntry>
-  constructor ({ transferRequestEntryMap, transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap }: TrackRequestRuleOpts) {
+  constructor ({ transferRequestEntryMap, transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap, peerId }: TrackRequestRuleOpts) {
     super({
       processIncoming: async (request: MojaloopHttpRequest, next: MojaloopRequestHandler): Promise<MojaloopHttpReply> => {
         const requestEntry: RequestMapEntry = {
           headers: request.headers,
           body: request.body,
-          sentPut: false
+          sentPut: false,
+          sourcePeerId: peerId
         }
         if (isTransferPostMessage(request.body)) {
           this._transferRequestEntryMap.set(request.body.transferId, requestEntry)

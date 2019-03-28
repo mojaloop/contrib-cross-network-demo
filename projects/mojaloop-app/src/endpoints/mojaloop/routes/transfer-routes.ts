@@ -27,6 +27,7 @@ export const TransferRoutes: hapi.ServerRoute[] = [
         },
         payload: {
           transferId: Joi.string().guid().required().description('Id of transfer').label('@ Transfer Id must be in a valid GUID format. @'),
+          quoteId: Joi.string().guid().required().description('Id of transfer').label('@ Transfer Id must be in a valid GUID format. @'),
           payeeFsp: Joi.string().required().min(1).max(32).description('Financial Service Provider of Payee').label('@ A valid Payee FSP number must be supplied. @'),
           payerFsp: Joi.string().required().min(1).max(32).description('Financial Service Provider of Payer').label('@ A valid Payer FSP number must be supplied. @'),
           amount: Joi.object().keys(MoneyValidation).required().description('Amount of the transfer').label('@ Supplied amount fails to match the required format. @'),

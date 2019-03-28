@@ -1,5 +1,5 @@
 import { pipeline, RuleConfig } from '@interledger/rafiki'
-import { Rule, setPipelineReader } from './types/rule'
+import { Rule, setPipelineReader, MojaloopRequestHandler } from './types/rule'
 import { PeerInfo } from './types/peer'
 import hapi from 'hapi'
 import { MojaloopHttpEndpoint } from './endpoints/mojaloop/mojaloop-http'
@@ -10,6 +10,7 @@ import { Router as RoutingTable, RouteManager } from 'ilp-routing'
 import { TrackRequestsRule, RequestMapEntry } from './rules/track-requests-rule'
 import { Money } from './types/mojaloop-models/money'
 import { ForeignExchangeRule } from './rules/fx-rule'
+import { QuotesPostRequest } from './types/mojaloop-models/models';
 
 const logger = log.child({ component: 'app' })
 
@@ -26,6 +27,7 @@ export class App {
   private _quoteErrorRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _businessRulesMap: Map<string, Rule[]> = new Map()
   private _mojaAddress: string
+  private _mojaId: string = 'fxp' // fspId of fxp
   private _port: number
   private _httpServer: hapi.Server
   private _httpEndpointManager: MojaloopHttpEndpointManager
@@ -53,7 +55,7 @@ export class App {
       logger.info('INCOMING ' + request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this._getStoredTransferById.bind(this), getStoredQuoteById: this._getStoredQuoteById.bind(this) })
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferById.bind(this), getStoredQuoteById: this.getStoredQuoteById.bind(this) })
   }
 
   public async start (): Promise<void> {
@@ -143,8 +145,20 @@ export class App {
   }
 
   public async sendOutgoingRequest (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> {
-    const destination = request.headers['fspiop-account'] ? request.headers['fspiop-account'] : request.headers['fspiop-destination']
-    const nextHop = this.routingTable.nextHop(destination)
+    let destination = ''
+    let nextHop = ''
+    if (isQuotePostMessage(request.body)) {
+      destination = request.body.payee.partyIdInfo.partySubIdOrType || ''
+      nextHop = this.routingTable.nextHop(destination)
+    } else if (isQuotePutMessage(request.body)) {
+      const storedQuote = this.getStoredQuoteById(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
+      nextHop = storedQuote.sourcePeerId
+      request.body.transferDestination = this._mojaId
+    } else if (isTransferPostMessage(request.body)) {
+      const storedQuote = this.getStoredQuoteById(request.body.quoteId)
+      destination = storedQuote.body.transferDestination
+      nextHop = this.routingTable.nextHop(destination)
+    }
     const handler = this._outgoingRequestHandlers.get(nextHop)
 
     if (!handler) {
@@ -152,30 +166,31 @@ export class App {
       throw new Error(`No handler set for ${nextHop}`)
     }
 
-    request.headers = this._updateRequestHeaders(request)
+    request.headers = this._updateRequestHeaders(request, nextHop)
 
     logger.debug('sending outgoing Packet', { destination, nextHop, headers: request.headers })
 
     return handler(request)
   }
 
-  private _updateRequestHeaders (request: MojaloopHttpRequest) {
+  private _updateRequestHeaders (request: MojaloopHttpRequest, nextHop: string) {
     let newHeaders = Object.assign({}, request.headers, { 'date': new Date(request.headers['date']).toUTCString() })
 
-    if (isTransferPostMessage(request.body) || isQuotePostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) {
-      const destination = request.headers['fspiop-account'] ? request.headers['fspiop-account'] : request.headers['fspiop-destination'] // TODO: is this the case?
-      const nextHopInfo = this.getPeerInfo(this.routingTable.nextHop(destination))
-      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': nextHopInfo.mojaAddress })
+    if (isTransferPostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) {
+      const nextHopInfo = this.getPeerInfo(nextHop)
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': 'test' })
+    } else if (isQuotePostMessage(request.body)) {
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId })
     } else if (isTransferPutMessage(request.body)) {
       const requestEntry = this._transferRequestEntryMap.get(request.objectId || '')
       if (requestEntry) {
-        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'] })
       }
       logger.info('Updating headers for transfer put request', { oldHeaders: request.headers, newHeaders, requestEntry })
     } else if (isQuotePutMessage(request.body)) {
       const requestEntry = this._quoteRequestEntryMap.get(request.objectId || '')
       if (requestEntry) {
-        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this.getOwnAddress(), 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+        newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'] })
       }
       logger.info('Updating headers for quote put request', { oldHeaders: request.headers, newHeaders, requestEntry })
     }
@@ -230,7 +245,8 @@ export class App {
             quoteErrorRequestEntryMap: this._quoteErrorRequestEntryMap,
             quoteRequestEntryMap: this._quoteRequestEntryMap,
             transferErrorRequestEntryMap: this._transferErrorRequestEntryMap,
-            transferRequestEntryMap: this._transferRequestEntryMap
+            transferRequestEntryMap: this._transferRequestEntryMap,
+            peerId: peerInfo.id
           })
         case('foreign-exchange'):
           return new ForeignExchangeRule({ convertAmount })
@@ -243,12 +259,20 @@ export class App {
     return [...appRules, ...peerInfo.rules].map(instantiateRule)
   }
 
-  private _getStoredTransferById (id: string): RequestMapEntry | undefined {
-    return this._transferRequestEntryMap.get(id)
+  getStoredTransferById (id: string): RequestMapEntry {
+    const transfer = this._transferRequestEntryMap.get(id)
+    if (!transfer) {
+      throw new Error('No transfer found for transferId=' + id)
+    }
+    return transfer
   }
 
-  private _getStoredQuoteById (id: string): RequestMapEntry | undefined {
-    return this._quoteRequestEntryMap.get(id)
+  getStoredQuoteById (id: string): RequestMapEntry {
+    const quote = this._quoteRequestEntryMap.get(id)
+    if (!quote) {
+      throw new Error('No quote found for quoteId=' + id)
+    }
+    return quote
   }
 
 }

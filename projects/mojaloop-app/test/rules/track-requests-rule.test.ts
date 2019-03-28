@@ -29,6 +29,7 @@ describe('Store post request entry', function () {
   }
   const postTransferMessage: TransfersPostRequest = {
     transferId,
+    quoteId,
     payeeFsp: 'bob',
     payerFsp: 'alice',
     amount: {
@@ -50,6 +51,7 @@ describe('Store post request entry', function () {
       currency: 'USD'
     },
     amountType: 'SEND',
+    transferCurrency: 'USD',
     payee: {
       partyIdInfo: {
         partyIdType: '1',
@@ -127,7 +129,7 @@ describe('Store post request entry', function () {
     transferErrorRequestEntryMap = new Map()
     quoteRequestEntryMap = new Map()
     quoteErrorRequestEntryMap = new Map()
-    trackRequestRule = new TrackRequestsRule({ transferRequestEntryMap,  transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap })
+    trackRequestRule = new TrackRequestsRule({ transferRequestEntryMap,  transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap, peerId: 'test-peer' })
     incomingHandler = setPipelineReader('incoming', trackRequestRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { return {} as MojaloopHttpReply })
     outgoingHandler = setPipelineReader('outgoing', trackRequestRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { return {} as MojaloopHttpReply })
   })
@@ -140,6 +142,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(transferRequestEntryMap.get(transferId), {
       headers,
       body: postTransferRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })    
   })
@@ -152,6 +155,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
       headers,
       body: postQuoteRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })    
   })
@@ -164,6 +168,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
       headers,
       body: putQuoteErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })    
   })
@@ -176,6 +181,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
       headers,
       body: putTransferErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })    
   })
@@ -184,6 +190,7 @@ describe('Store post request entry', function () {
     transferRequestEntryMap.set(transferId, {
       headers,
       body: putTransferRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })
 
@@ -192,6 +199,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(transferRequestEntryMap.get(transferId), {
       headers,
       body: putTransferRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: true
     })
   })
@@ -200,6 +208,7 @@ describe('Store post request entry', function () {
     quoteRequestEntryMap.set(quoteId, {
       headers,
       body: putQuoteRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })
 
@@ -208,6 +217,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
       headers,
       body: putQuoteRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: true
     })
   })
@@ -216,6 +226,7 @@ describe('Store post request entry', function () {
     transferErrorRequestEntryMap.set(transferId, {
       headers,
       body: putTransferErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })
 
@@ -224,6 +235,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
       headers,
       body: putTransferErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: true
     })
   })
@@ -232,6 +244,7 @@ describe('Store post request entry', function () {
     quoteErrorRequestEntryMap.set(quoteId, {
       headers,
       body: putQuoteErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: false
     })
 
@@ -240,6 +253,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
       headers,
       body: putQuoteErrorRequest.body,
+      sourcePeerId: 'test-peer',
       sentPut: true
     })
   })

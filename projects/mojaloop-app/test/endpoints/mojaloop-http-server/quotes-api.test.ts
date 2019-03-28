@@ -30,6 +30,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       currency: 'USD'
     },
     amountType: 'SEND',
+    transferCurrency: 'USD',
     payee: {
       partyIdInfo: {
         partyIdType: '1',
@@ -72,6 +73,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers: {},
       body: {},
+      sourcePeerId: 'test-peer',
       sentPut: false
     }
   }
@@ -80,6 +82,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers,
       body: postQuoteMessage,
+      sourcePeerId: 'test-peer',
       sentPut: false
     }
   }

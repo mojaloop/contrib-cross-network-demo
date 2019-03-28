@@ -33,6 +33,7 @@ export const QuotesRoutes: hapi.ServerRoute[] = [
         headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         payload: {
           quoteId: Joi.string().guid().required().description('Id of transfer').label('@ Transfer Id must be in a valid GUID format. @'),
+          transferCurrency: Joi.string().optional().currency().description('Currency of the transfer').label('@ Currency needs to be a valid ISO 4217 currency code. @'),
           transactionId: Joi.string().guid().required().description('Id of transaction').label('@ Transaction Id must be in a valid GUID format. @'),
           transactionRequestId: Joi.string().guid().optional().description('Id of transaction').label('@ Transaction Id must be in a valid GUID format. @'),
           payee: Joi.object().keys(PartyValidation).required(),
@@ -66,6 +67,7 @@ export const QuotesRoutes: hapi.ServerRoute[] = [
         headers: Joi.object().keys(Headers).unknown(false).options({ stripUnknown: true }),
         payload: {
           transferAmount: Joi.object().required().keys(MoneyValidation).description('Amount to transfer'),
+          transferDestination: Joi.string().optional().description('Id of participant that the transfer must be sent to').label('@ A valid FSP number must be supplied. @'),
           payeeReceiveAmount: Joi.object().optional().keys(MoneyValidation).description('Amount that the payee should receive in the end'),
           payeeFspFee: Joi.object().optional().keys(MoneyValidation),
           payeeFspCommission: Joi.object().optional().keys(MoneyValidation),
