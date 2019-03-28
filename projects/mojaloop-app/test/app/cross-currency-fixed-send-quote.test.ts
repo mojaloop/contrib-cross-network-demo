@@ -155,6 +155,20 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
       currency: 'XOF'
     })
   })
+
+  it('changes the transfer currency to XOF for outgoing quote post', async function () {
+    const postQuoteRequest: MojaloopHttpRequest = {
+      headers: getQuoteHeaders('blue-dfsp'),
+      body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
+    }
+    assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'USD')
+
+    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
+
+    sinon.assert.calledOnce(xofEndpointStub)
+    const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
+    assert.deepEqual(outgoingPostBody.transferCurrency, 'XOF')
+  })
 })
 
 describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to USD)', async function () {  
@@ -206,6 +220,20 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
       amount: '100',
       currency: 'USD'
     })
+  })
+
+  it('changes the transfer currency to USD for outgoing quote post', async function () {
+    const postQuoteRequest: MojaloopHttpRequest = {
+      headers: getQuoteHeaders('blue-dfsp'),
+      body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
+    }
+    assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'XOF')
+
+    await xofEndpoint.handleIncomingRequest(postQuoteRequest)
+
+    sinon.assert.calledOnce(usdEndpointStub)
+    const outgoingPostBody = usdEndpointStub.getCall(0).args[0].body
+    assert.deepEqual(outgoingPostBody.transferCurrency, 'USD')
   })
 })
 

@@ -30,6 +30,7 @@ export class ForeignExchangeRule extends Rule {
           const incomingAmount = request.body.amount
           const convertedAmount = convertAmount(incomingAmount, request.body.quoteId)
           request.body.amount = convertedAmount
+          request.body.transferCurrency = convertedAmount.currency
           logger.debug('applied FX conversion to quote', { incomingAmount, convertedAmount })
         } else if (isQuotePutMessage(request.body)) {
           const incomingAmount = request.body.transferAmount

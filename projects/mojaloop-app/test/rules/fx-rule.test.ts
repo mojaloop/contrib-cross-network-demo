@@ -128,7 +128,8 @@ describe('FX Rule', function () {
         assert.deepEqual((request.body as QuotesPostRequest).amount, {
           currency: 'XOF',
           amount: '1000'
-        })      
+        })
+        assert.equal((request.body as QuotesPostRequest).transferCurrency, 'XOF')      
         return {} as MojaloopHttpReply 
       })
       await outgoingHandler(getPostQuoteRequest('SEND', 'USD'))
