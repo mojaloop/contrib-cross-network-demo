@@ -174,19 +174,18 @@ export class App {
   }
 
   private _updateRequestHeaders (request: MojaloopHttpRequest, nextHop: string) {
-    let newHeaders = Object.assign({}, request.headers, { 'date': new Date(request.headers['date']).toUTCString() })
+    let newHeaders = { 'date': new Date(request.headers['date']).toUTCString() }
 
-    if (isTransferPostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) {
+    if (isTransferPostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) { // TODO: update headers
       newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': 'test' })
     } else if (isQuotePostMessage(request.body)) {
-      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId })
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'content-type': 'application/vnd.interoperability.quotes+json;version=1.0', 'accept': 'application/vnd.interoperability.quotes+json;version=1.0' })
     } else if (isTransferPutMessage(request.body)) {
       const requestEntry = this._transferRequestEntryMap.get(request.objectId || '')
       if (!requestEntry) {
         logger.error('No transfer post request received for quoteId=' + request.objectId, { request })
         throw new Error('No transfer post request received for quoteId=' + request.objectId)
       }
-      logger.info('Updating headers for transfer put request', { oldHeaders: request.headers, newHeaders, requestEntry })
       newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'] })
     } else if (isQuotePutMessage(request.body)) {
       const requestEntry = this._quoteRequestEntryMap.get(request.objectId || '')
@@ -194,9 +193,10 @@ export class App {
         logger.error('No quote post request received for quoteId=' + request.objectId, { request })
         throw new Error('No quote post request received for quoteId=' + request.objectId)
       }
-      logger.info('Updating headers for quote put request', { oldHeaders: request.headers, newHeaders, requestEntry })
-      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'], 'content-type': 'application/vnd.interoperability.quotes+json;version=1.0', 'accept': 'application/vnd.interoperability.quotes+json;version=1.0' })
     }
+
+    logger.info('Updated headers', { oldHeaders: request.headers, newHeaders })
 
     return newHeaders
   }
