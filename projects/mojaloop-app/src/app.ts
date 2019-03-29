@@ -1,5 +1,5 @@
 import { pipeline, RuleConfig } from '@interledger/rafiki'
-import { Rule, setPipelineReader, MojaloopRequestHandler } from './types/rule'
+import { Rule, setPipelineReader } from './types/rule'
 import { PeerInfo } from './types/peer'
 import hapi from 'hapi'
 import { MojaloopHttpEndpoint } from './endpoints/mojaloop/mojaloop-http'
@@ -10,7 +10,6 @@ import { Router as RoutingTable, RouteManager } from 'ilp-routing'
 import { TrackRequestsRule, RequestMapEntry } from './rules/track-requests-rule'
 import { Money } from './types/mojaloop-models/money'
 import { ForeignExchangeRule } from './rules/fx-rule'
-import { QuotesPostRequest } from './types/mojaloop-models/models';
 
 const logger = log.child({ component: 'app' })
 
@@ -21,9 +20,11 @@ export interface AppOptions {
 export class App {
   routingTable: RoutingTable = new RoutingTable()
   routeManager: RouteManager = new RouteManager(this.routingTable)
-  private _transferRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private _transferPostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private _transferPutRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _transferErrorRequestEntryMap: Map<string, RequestMapEntry> = new Map()
-  private _quoteRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private _quotePostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private _quotePutRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _quoteErrorRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _businessRulesMap: Map<string, Rule[]> = new Map()
   private _mojaAddress: string
@@ -55,7 +56,7 @@ export class App {
       logger.info('INCOMING ' + request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferById.bind(this), getStoredQuoteById: this.getStoredQuoteById.bind(this) })
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferPostById.bind(this), getStoredQuoteById: this.getStoredQuotePostById.bind(this) })
   }
 
   public async start (): Promise<void> {
@@ -151,13 +152,17 @@ export class App {
       destination = request.body.payee.partyIdInfo.partySubIdOrType || ''
       nextHop = this.routingTable.nextHop(destination)
     } else if (isQuotePutMessage(request.body)) {
-      const storedQuote = this.getStoredQuoteById(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
+      const storedQuote = this.getStoredQuotePostById(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
       nextHop = storedQuote.sourcePeerId
       request.body.transferDestination = this._mojaId
     } else if (isTransferPostMessage(request.body)) {
-      const storedQuote = this.getStoredQuoteById(request.body.quoteId)
-      destination = storedQuote.body.transferDestination
-      nextHop = this.routingTable.nextHop(destination)
+      const storedQuotePutRequest = this.getStoredQuotePutById(request.body.quoteId)
+      nextHop = storedQuotePutRequest.sourcePeerId
+      request.body.payerFsp = this._mojaId
+      request.body.payeeFsp = storedQuotePutRequest.body.transferDestination
+    } else if (isTransferPutMessage(request.body)) {
+      const storedTransferPostRequest = this.getStoredTransferPostById(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
+      nextHop = storedTransferPostRequest.sourcePeerId
     }
     const handler = this._outgoingRequestHandlers.get(nextHop)
 
@@ -176,19 +181,22 @@ export class App {
   private _updateRequestHeaders (request: MojaloopHttpRequest, nextHop: string) {
     let newHeaders = { 'date': new Date(request.headers['date']).toUTCString() }
 
-    if (isTransferPostMessage(request.body) || isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) { // TODO: update headers
+    if (isQuotePutErrorRequest(request) || isTransferPutErrorRequest(request) || isTransferGetRequest(request) || isQuoteGetRequest(request)) { // TODO: update headers
       newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': 'test' })
     } else if (isQuotePostMessage(request.body)) {
       newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'content-type': 'application/vnd.interoperability.quotes+json;version=1.0', 'accept': 'application/vnd.interoperability.quotes+json;version=1.0' })
+    } else if (isTransferPostMessage(request.body)) {
+      const storedQuotePutRequest = this.getStoredQuotePutById(request.body.quoteId)
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': storedQuotePutRequest.body.transferDestination, 'content-type': 'application/vnd.interoperability.transfers+json;version=1.0', 'accept': 'application/vnd.interoperability.transfers+json;version=1.0' })
     } else if (isTransferPutMessage(request.body)) {
-      const requestEntry = this._transferRequestEntryMap.get(request.objectId || '')
+      const requestEntry = this._transferPostRequestEntryMap.get(request.objectId || '')
       if (!requestEntry) {
         logger.error('No transfer post request received for quoteId=' + request.objectId, { request })
         throw new Error('No transfer post request received for quoteId=' + request.objectId)
       }
-      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'] })
+      newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': requestEntry.headers['fspiop-source'], 'content-type': 'application/vnd.interoperability.transfers+json;version=1.0', 'accept': 'application/vnd.interoperability.transfers+json;version=1.0' })
     } else if (isQuotePutMessage(request.body)) {
-      const requestEntry = this._quoteRequestEntryMap.get(request.objectId || '')
+      const requestEntry = this._quotePostRequestEntryMap.get(request.objectId || '')
       if (!requestEntry) {
         logger.error('No quote post request received for quoteId=' + request.objectId, { request })
         throw new Error('No quote post request received for quoteId=' + request.objectId)
@@ -246,9 +254,11 @@ export class App {
         case('track-requests'):
           return new TrackRequestsRule({
             quoteErrorRequestEntryMap: this._quoteErrorRequestEntryMap,
-            quoteRequestEntryMap: this._quoteRequestEntryMap,
+            quotePostRequestEntryMap: this._quotePostRequestEntryMap,
+            quotePutRequestEntryMap: this._quotePutRequestEntryMap,
             transferErrorRequestEntryMap: this._transferErrorRequestEntryMap,
-            transferRequestEntryMap: this._transferRequestEntryMap,
+            transferPostRequestEntryMap: this._transferPostRequestEntryMap,
+            transferPutRequestEntryMap: this._transferPutRequestEntryMap,
             peerId: peerInfo.id
           })
         case('foreign-exchange'):
@@ -262,18 +272,26 @@ export class App {
     return [...appRules, ...peerInfo.rules].map(instantiateRule)
   }
 
-  getStoredTransferById (id: string): RequestMapEntry {
-    const transfer = this._transferRequestEntryMap.get(id)
+  getStoredTransferPostById (id: string): RequestMapEntry {
+    const transfer = this._transferPostRequestEntryMap.get(id)
     if (!transfer) {
-      throw new Error('No transfer found for transferId=' + id)
+      throw new Error('No transfer post request found for transferId=' + id)
     }
     return transfer
   }
 
-  getStoredQuoteById (id: string): RequestMapEntry {
-    const quote = this._quoteRequestEntryMap.get(id)
+  getStoredQuotePostById (id: string): RequestMapEntry {
+    const quote = this._quotePostRequestEntryMap.get(id)
     if (!quote) {
-      throw new Error('No quote found for quoteId=' + id)
+      throw new Error('No quote post request found for quoteId=' + id)
+    }
+    return quote
+  }
+
+  getStoredQuotePutById (id: string): RequestMapEntry {
+    const quote = this._quotePutRequestEntryMap.get(id)
+    if (!quote) {
+      throw new Error('No quote put request found for quoteId=' + id)
     }
     return quote
   }

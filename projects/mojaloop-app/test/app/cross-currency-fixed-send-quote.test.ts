@@ -7,63 +7,10 @@ import {v4 as uuid} from 'uuid'
 import { PeerInfo } from '../../src/types/peer'
 import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http'
 import { MojaloopHttpRequest, MojaloopHttpReply } from '../../src/types/mojaloop-packets'
-import { QuotesPostRequest, QuotesIDPutResponse, ErrorInformationObject } from '../../src/types/mojaloop-models/models'
+import { QuotesPostRequest } from '../../src/types/mojaloop-models/models'
+import { getHeaders, getQuotePostMessage, getQuotePutMessage } from '../helpers/messages'
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
-
-function getQuoteHeaders (source: string, destination?: string) {
-  let headers = {
-    'fspiop-source': source,
-    'date': new Date(Date.now()).toUTCString(),
-    'content-type': `application/vnd.interoperability.quotes+json;version=1.0`
-  }
-  if (destination) headers['fspiop-destination'] = destination
-  return headers
-}
-
-function getQuotePostMessage (amount: string, currency: string, amountType: string, quoteId: string, payeeMojaAddress: string, payerMojaAddress: string, transactionId: string = uuid(), transferCurrency: string = currency): QuotesPostRequest {
-  return {
-    amount: {
-      amount,
-      currency
-    },
-    transferCurrency,
-    amountType,
-    payee: {
-      partyIdInfo: {
-        partyIdType: '1',
-        partyIdentifier: '1',
-        partySubIdOrType: payeeMojaAddress
-      }
-    },
-    payer: {
-      partyIdInfo: {
-        partyIdType: '1',
-        partyIdentifier: '1',
-        partySubIdOrType: payerMojaAddress
-      }
-    },
-    quoteId,
-    transactionId,
-    transactionType: {
-      initiator: 'Payee',
-      initiatorType: 'test',
-      scenario: 'refund'
-    }
-  }
-}
-
-function getQuotePutMessage (amount: string, currency: string, condition: string, expiration: string, ilpPacket: string): QuotesIDPutResponse {
-  return {
-    transferAmount: {
-      amount,
-      currency 
-    },
-    condition,
-    expiration,
-    ilpPacket
-  }
-}
 
 /* 
   Alice (USD) at BLUE-DFSP sends a fixed SEND quote request to Bob (XOF) at RED-DFSP
@@ -76,34 +23,34 @@ function getQuotePutMessage (amount: string, currency: string, condition: string
 */
 
 let fxp: App
-  let usdEndpointStub: sinon.SinonStub
-  let xofEndpointStub: sinon.SinonStub
-  const xofEndpoint = new MojaloopHttpEndpoint({ url: 'http://mowali' })
-  const usdEndpoint = new MojaloopHttpEndpoint({ url: 'http://mowali' })
-  const quoteId = uuid()
-  const mowaliUsdPeerInfo: PeerInfo = {
-    id: 'mowali-usd',
-    url: 'http://mowali',
-    assetCode: 'USD',
-    assetScale: 2,
-    mojaAddress: 'moja.mowali.usd',
-    relation: 'peer',
-    rules: [
-      { name: 'foreign-exchange' }
-    ]
-  }
+let usdEndpointStub: sinon.SinonStub
+let xofEndpointStub: sinon.SinonStub
+const xofEndpoint = new MojaloopHttpEndpoint({ url: 'http://mowali' })
+const usdEndpoint = new MojaloopHttpEndpoint({ url: 'http://mowali' })
+const quoteId = uuid()
+const mowaliUsdPeerInfo: PeerInfo = {
+  id: 'mowali-usd',
+  url: 'http://mowali',
+  assetCode: 'USD',
+  assetScale: 2,
+  mojaAddress: 'moja.mowali.usd',
+  relation: 'peer',
+  rules: [
+    { name: 'foreign-exchange' }
+  ]
+}
 
-  const mowaliXofPeerInfo: PeerInfo = {
-    id: 'mowali-xof',
-    url: 'http://mowali',
-    assetCode: 'XOF',
-    assetScale: 2,
-    mojaAddress: 'moja.mowali.xof',
-    relation: 'peer',
-    rules: [
-      { name: 'foreign-exchange' }
-    ]
-  }
+const mowaliXofPeerInfo: PeerInfo = {
+  id: 'mowali-xof',
+  url: 'http://mowali',
+  assetCode: 'XOF',
+  assetScale: 2,
+  mojaAddress: 'moja.mowali.xof',
+  relation: 'peer',
+  rules: [
+    { name: 'foreign-exchange' }
+  ]
+}
 
 describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to XOF)', async function () {  
 
@@ -124,7 +71,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
 
   it('only changes the fspiop-source header to fxp of the outgoing post quote', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
 
@@ -138,7 +85,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
 
   it('changes the amount from USD to XOF', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).amount, {
@@ -158,7 +105,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
 
   it('changes the transfer currency to XOF for outgoing quote post', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'USD')
@@ -190,7 +137,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
 
   it('only changes the fspiop-source header to fxp of the outgoing post quote', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
     }
 
@@ -204,7 +151,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
 
   it('changes the amount from USD to XOF', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).amount, {
@@ -224,7 +171,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
 
   it('changes the transfer currency to USD for outgoing quote post', async function () {
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'XOF')
@@ -248,7 +195,7 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
 
     // set up the required quote post flowing from Alice (USD) to Bob (XOF)
     const postQuoteRequest: MojaloopHttpRequest = {
-      headers: getQuoteHeaders('blue-dfsp'),
+      headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
     await usdEndpoint.handleIncomingRequest(postQuoteRequest)
@@ -261,11 +208,11 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
   })
 
   it('sets the fspiop-source to fxp and the destination to the fspiop-source of the stored quote', async function () {
-    assert.equal(fxp.getStoredQuoteById(quoteId).headers['fspiop-source'], 'blue-dfsp')
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'blue-dfsp')
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
-      headers: getQuoteHeaders('red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet')
+      headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
+      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
     }
 
     await xofEndpoint.handleIncomingRequest(putQuoteRequest)
@@ -277,11 +224,11 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
   })
 
   it('sets the transferDestination to fxp in the put quote response', async function () {
-    assert.equal(fxp.getStoredQuoteById(quoteId).headers['fspiop-source'], 'blue-dfsp')
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'blue-dfsp')
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
-      headers: getQuoteHeaders('red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet')
+      headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
+      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
     }
 
     await xofEndpoint.handleIncomingRequest(putQuoteRequest)

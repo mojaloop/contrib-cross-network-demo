@@ -73,8 +73,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers: {},
       body: {},
-      sourcePeerId: 'test-peer',
-      sentPut: false
+      sourcePeerId: 'test-peer'
     }
   }
 
@@ -82,8 +81,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers,
       body: postQuoteMessage,
-      sourcePeerId: 'test-peer',
-      sentPut: false
+      sourcePeerId: 'test-peer'
     }
   }
 

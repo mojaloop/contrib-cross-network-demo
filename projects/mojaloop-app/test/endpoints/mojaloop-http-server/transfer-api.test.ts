@@ -52,8 +52,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     return {
       headers,
       body: postMessage,
-      sourcePeerId: 'test-peer',
-      sentPut: false
+      sourcePeerId: 'test-peer'
     }
   }
 
@@ -61,8 +60,7 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     return {
       headers: {},
       body: {},
-      sourcePeerId: 'test-peer',
-      sentPut: false
+      sourcePeerId: 'test-peer'
     }
   }
 

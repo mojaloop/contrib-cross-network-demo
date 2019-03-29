@@ -43,8 +43,7 @@ describe('Mojaloop Http Endpoint Manager getEndpoint', function () {
   const requestMapEntry: RequestMapEntry = {
     headers: {},
     body: {},
-    sourcePeerId: 'test-peer',
-    sentPut: false
+    sourcePeerId: 'test-peer'
   }
 
   beforeEach(function () {
