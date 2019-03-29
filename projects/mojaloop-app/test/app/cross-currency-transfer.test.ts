@@ -3,12 +3,11 @@ import * as sinon from 'sinon'
 import * as Chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { App } from '../../src/app'
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import {v4 as uuid} from 'uuid'
 import { PeerInfo } from '../../src/types/peer';
 import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http'
 import { MojaloopHttpRequest, MojaloopHttpReply } from '../../src/types/mojaloop-packets'
-import { TransfersPostRequest, QuotesPostRequest, TransfersIDPutResponse, QuotesIDPutResponse, ErrorInformationObject } from '../../src/types/mojaloop-models/models'
 import { getHeaders, getQuotePostMessage, getQuotePutMessage, getTransferPostMessage, getTransferPutMessage } from '../helpers/messages';
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -55,6 +54,11 @@ const mowaliXofPeerInfo: PeerInfo = {
   ]
 }
 
+const condition = 'GRzLaTP7DJ9t4P-a_BA0WA9wzzlsugf00-Tn6kESAfM'
+const ilpPacket = 'test-packet'
+const serverBaseUrl = 'http://localhost:3000/mowali'
+const expiry = '2016-05-24T08:38:08.699-04:00'
+
 describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', function () {
   beforeEach(async function () {
     fxp = new App()
@@ -72,10 +76,10 @@ describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', fu
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
       headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
+      body: getQuotePutMessage('57959', 'XOF', condition, expiry, ilpPacket, 'red-dfsp')
     }
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
-    await xofEndpoint.handleIncomingRequest(putQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
     assert.isNotNull(fxp.getStoredQuotePostById(quoteId))
     assert.isNotNull(fxp.getStoredQuotePutById(quoteId))
     usdEndpointStub.reset()
@@ -91,10 +95,10 @@ describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', fu
   it('sets the payeeFsp to red-dfsp and the payerFsp to fxp', async function () {
     const postTransferRequest: MojaloopHttpRequest = {
       headers: getHeaders('transfers', 'blue-fsp', 'fxp'),
-      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'test-condition')
+      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, expiry, ilpPacket, condition)
     }
 
-    await usdEndpoint.handleIncomingRequest(postTransferRequest)
+    await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
@@ -106,10 +110,10 @@ describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', fu
   it('sets fspiop-source to fxp and fspiop-destination to red-dfsp', async function () {
     const postTransferRequest: MojaloopHttpRequest = {
       headers: getHeaders('transfers', 'blue-fsp', 'fxp'),
-      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'test-condition')
+      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, expiry, ilpPacket, condition)
     }
 
-    await usdEndpoint.handleIncomingRequest(postTransferRequest)
+    await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostHeaders = xofEndpointStub.getCall(0).args[0].headers
@@ -121,10 +125,10 @@ describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', fu
   it('sets the amount to that stored in the quote response from red-dfsp', async function () {
     const postTransferRequest: MojaloopHttpRequest = {
       headers: getHeaders('transfers', 'blue-fsp', 'fx'),
-      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'test-condition')
+      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, expiry, ilpPacket, condition)
     }
 
-    await usdEndpoint.handleIncomingRequest(postTransferRequest)
+    await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
@@ -154,15 +158,15 @@ describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', fun
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
       headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
+      body: getQuotePutMessage('57959', 'XOF', condition, expiry, ilpPacket, 'red-dfsp')
     }
     const postTransferRequest: MojaloopHttpRequest = {
       headers: getHeaders('transfers', 'blue-dfsp', 'fxp'),
-      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'test-condition')
+      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, expiry, ilpPacket, condition)
     }
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
-    await xofEndpoint.handleIncomingRequest(putQuoteRequest)
-    await usdEndpoint.handleIncomingRequest(postTransferRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
+    await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
     assert.isNotNull(fxp.getStoredQuotePostById(quoteId))
     assert.isNotNull(fxp.getStoredQuotePutById(quoteId))
     assert.isNotNull(fxp.getStoredTransferPostById(transferId))
@@ -183,7 +187,7 @@ describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', fun
       body: getTransferPutMessage('COMMITTED')
     }
 
-    await xofEndpoint.handleIncomingRequest(putTransferRequest)
+    await axios.put(`${serverBaseUrl}/transfers/${transferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPostHeaders = usdEndpointStub.getCall(0).args[0].headers

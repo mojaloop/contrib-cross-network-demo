@@ -9,7 +9,8 @@ import { MojaloopHttpEndpoint } from '../../../src/endpoints/mojaloop/mojaloop-h
 import { TransfersPostRequest, TransfersIDPutResponse, ErrorInformationObject } from '../../../src/types/mojaloop-models/models'
 import { MojaloopHttpRequest, isTransferPostMessage, isTransferPutMessage, isTransferGetRequest, isTransferPutErrorRequest } from '../../../src/types/mojaloop-packets';
 import { AxiosResponse } from 'axios';
-import { RequestMapEntry } from '../../../src/rules/track-requests-rule';
+import { RequestMapEntry } from '../../../src/rules/track-requests-rule'
+import { getQuotePutMessage } from '../../helpers/messages';
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -64,13 +65,21 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     }
   }
 
+  const getStoredQuotePutById = (id: string) => {
+    return {
+      headers: {},
+      body: getQuotePutMessage('100', 'USD', 'test-condition', 'expiry', 'test-packet', 'test-peer'),
+      sourcePeerId: 'test-peer'
+    }
+  }
+
   beforeEach(function () {
     httpServer = new hapi.Server({
       host: '0.0.0.0',
       port: 7780
     })
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById })
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById, getStoredQuotePutById})
   })
 
   afterEach(function () {

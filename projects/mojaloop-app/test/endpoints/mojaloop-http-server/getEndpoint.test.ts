@@ -54,7 +54,7 @@ describe('Mojaloop Http Endpoint Manager getEndpoint', function () {
     mowaliUsdEndpoint = new MojaloopHttpEndpoint({url: mowaliUsd.url})
     mowaliXofEndpoint = new MojaloopHttpEndpoint({url: mowaliXof.url})
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById: (id: string) => requestMapEntry, getStoredQuoteById: (id: string) => requestMapEntry })
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById: (id: string) => requestMapEntry, getStoredQuoteById: (id: string) => requestMapEntry, getStoredQuotePutById : (id: string) => requestMapEntry })
     endpointManager.set(mowaliUsd.id, mowaliUsdEndpoint)
     endpointManager.set(mowaliXof.id, mowaliXofEndpoint)
   })

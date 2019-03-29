@@ -7,6 +7,7 @@ import { RequestMapEntry } from '../../rules/track-requests-rule'
 export interface EndpointManagerServices {
   getStoredTransferById: (id: string) => RequestMapEntry | undefined
   getStoredQuoteById: (id: string) => RequestMapEntry | undefined
+  getStoredQuotePutById: (id: string) => RequestMapEntry | undefined
 }
 
 export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoint> {
@@ -17,6 +18,7 @@ export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoin
     server.method('getEndpoint', this.getEndpoint.bind(this))
     server.method('getStoredTransferById', services.getStoredTransferById)
     server.method('getStoredQuoteById', services.getStoredQuoteById)
+    server.method('getStoredQuotePutById', services.getStoredQuotePutById)
 
     const routes: hapi.ServerRoute[] = [...TransferRoutes, ...QuotesRoutes]
     routes.forEach(route => server.route(route))

@@ -9,6 +9,7 @@ import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http
 import { MojaloopHttpRequest, MojaloopHttpReply } from '../../src/types/mojaloop-packets'
 import { QuotesPostRequest } from '../../src/types/mojaloop-models/models'
 import { getHeaders, getQuotePostMessage, getQuotePutMessage } from '../helpers/messages'
+import axios from 'axios';
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
 
@@ -52,6 +53,11 @@ const mowaliXofPeerInfo: PeerInfo = {
   ]
 }
 
+const condition = 'GRzLaTP7DJ9t4P-a_BA0WA9wzzlsugf00-Tn6kESAfM'
+const ilpPacket = 'test-packet'
+const serverBaseUrl = 'http://localhost:3000/mowali'
+const expiry = '2016-05-24T08:38:08.699-04:00'
+
 describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to XOF)', async function () {  
 
   beforeEach(function () {
@@ -75,7 +81,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
 
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostHeaders = xofEndpointStub.getCall(0).args[0].headers
@@ -93,7 +99,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
       currency: 'USD'
     })
 
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
@@ -110,7 +116,7 @@ describe('FXP receives fixed SEND quote post flowing from Alice to  Bob (USD to 
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'USD')
 
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(xofEndpointStub)
     const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
@@ -141,7 +147,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
       body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
     }
 
-    await xofEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPostHeaders = usdEndpointStub.getCall(0).args[0].headers
@@ -159,7 +165,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
       currency: 'XOF'
     })
 
-    await xofEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPostBody = usdEndpointStub.getCall(0).args[0].body
@@ -176,7 +182,7 @@ describe('FXP receives fixed SEND quote post flowing from Bob to Alice (XOF to U
     }
     assert.deepEqual((postQuoteRequest.body as QuotesPostRequest).transferCurrency, 'XOF')
 
-    await xofEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPostBody = usdEndpointStub.getCall(0).args[0].body
@@ -198,7 +204,7 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
       headers: getHeaders('quotes', 'blue-dfsp'),
       body: getQuotePostMessage('100', 'USD', 'SEND', quoteId, 'moja.mowali.xof.bob', 'moja.mowali.usd.alice')
     }
-    await usdEndpoint.handleIncomingRequest(postQuoteRequest)
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
   })
 
   afterEach(function () {
@@ -212,10 +218,10 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
       headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
+      body: getQuotePutMessage('57959', 'XOF', condition, expiry, ilpPacket, 'red-dfsp')
     }
 
-    await xofEndpoint.handleIncomingRequest(putQuoteRequest)
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPutHeaders = usdEndpointStub.getCall(0).args[0].headers
@@ -228,10 +234,10 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
     const putQuoteRequest: MojaloopHttpRequest = {
       objectId: quoteId,
       headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
-      body: getQuotePutMessage('57959', 'XOF', 'test-condition', 'Thu, 14 Mar 2019 09:07:54 GMT', 'test-packet', 'red-dfsp')
+      body: getQuotePutMessage('57959', 'XOF', condition, expiry, ilpPacket, 'red-dfsp')
     }
 
-    await xofEndpoint.handleIncomingRequest(putQuoteRequest)
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPutBody = usdEndpointStub.getCall(0).args[0].body

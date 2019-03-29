@@ -37,7 +37,8 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
     }
 
     const storedTransfer = request.server.methods.getStoredTransferById(request.params.id)
-    const currency = storedTransfer.body.amount.currency
+    const storedQuotePut = request.server.methods.getStoredQuotePutById(storedTransfer.body.quoteId)
+    const currency = storedQuotePut.body.transferAmount.currency
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferPutHttpRequest: MojaloopHttpRequest = {
       objectId: request.params.id,

@@ -56,7 +56,7 @@ export class App {
       logger.info('INCOMING ' + request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferPostById.bind(this), getStoredQuoteById: this.getStoredQuotePostById.bind(this) })
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferPostById.bind(this), getStoredQuoteById: this.getStoredQuotePostById.bind(this), getStoredQuotePutById: this.getStoredQuotePutById.bind(this) })
   }
 
   public async start (): Promise<void> {
