@@ -38,22 +38,22 @@ export class TrackRequestsRule extends Rule {
         }
         if (isTransferPostMessage(request.body)) {
           this._transferPostRequestEntryMap.set(request.body.transferId, requestEntry)
-          logger.debug('storing transfer post request', { requestEntry })
+          logger.debug(`storing transfer post request from peerId=${peerId}`, { requestEntry })
         } else if (isTransferPutMessage(request.body)) {
           this._transferPutRequestEntryMap.set(request.objectId!, requestEntry)
-          logger.debug('storing transfer put request', { requestEntry })
+          logger.debug(`storing transfer put request from peerId=${peerId}`, { requestEntry })
         } else if (isQuotePostMessage(request.body)) {
           this._quotePostRequestEntryMap.set(request.body.quoteId, requestEntry)
-          logger.debug('storing quote post request', { requestEntry })
+          logger.debug(`storing quote post request from peerId=${peerId}`, { requestEntry })
         } else if (isQuotePutMessage(request.body)) {
           this._quotePutRequestEntryMap.set(request.objectId!, requestEntry)
-          logger.debug('storing quote put request', { requestEntry })
+          logger.debug(`storing quote put request from peerId=${peerId}`, { requestEntry })
         } else if (isQuotePutErrorRequest(request)) {
           this._quoteErrorRequestEntryMap.set(request.objectId!, requestEntry)
-          logger.debug('storing quote put error request', { requestEntry })
+          logger.debug(`storing quote put error request from peerId=${peerId}`, { requestEntry })
         } else if (isTransferPutErrorRequest(request)) {
           this._transferErrorRequestEntryMap.set(request.objectId!, requestEntry)
-          logger.debug('storing transfer put error request', { requestEntry })
+          logger.debug(`storing transfer put error request from peerId=${peerId}`, { requestEntry })
         }
 
         return next(request)
