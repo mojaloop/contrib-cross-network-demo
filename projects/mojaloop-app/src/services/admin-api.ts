@@ -90,7 +90,7 @@ export class AdminApi {
 
     // logging to see the path of every request
     this._httpServer.events.on('response', function (request: hapi.Request) {
-      logger.info(request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
+      logger.info('INCOMING ' + request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
   }
 

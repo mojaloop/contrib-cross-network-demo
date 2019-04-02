@@ -36,8 +36,9 @@ export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
       throw new Error('Could not turn payload into transfer put request.')
     }
 
-    const storedTransfer = request.server.methods.getStoredTransferById(request.params.id)
-    const currency = storedTransfer.body.amount.currency
+    const storedTransfer = request.server.methods.mapOutgoingTransferToIncoming(request.params.id)
+    const storedQuotePut = request.server.methods.getStoredQuotePutById(storedTransfer.body.quoteId)
+    const currency = storedQuotePut.body.transferAmount.currency
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
     const transferPutHttpRequest: MojaloopHttpRequest = {
       objectId: request.params.id,

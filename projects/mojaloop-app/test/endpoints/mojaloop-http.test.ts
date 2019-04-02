@@ -6,6 +6,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { MojaloopHttpEndpoint } from '../../src/endpoints/mojaloop/mojaloop-http'
 import { MojaloopHttpRequest } from '../../src/types/mojaloop-packets'
 import { TransfersPostRequest, TransfersIDPutResponse, QuotesPostRequest, QuotesIDPutResponse, ErrorInformationObject } from '../../src/types/mojaloop-models/models'
+import {v4 as uuid} from 'uuid'
 
 Chai.use(chaiAsPromised)
 const assert = Object.assign(Chai.assert, sinon.assert)
@@ -31,6 +32,7 @@ describe('HTTP Mojaloop Endpoint', function () {
     it('sends post transfer request created from MojaloopHttpRequest', async function () {
       const postMessage: TransfersPostRequest = {
         transferId: '1',
+        quoteId: uuid(),
         payeeFsp: 'bob',
         payerFsp: 'alice',
         amount: {
@@ -84,6 +86,7 @@ describe('HTTP Mojaloop Endpoint', function () {
           currency: 'USD'
         },
         amountType: '',
+        transferCurrency: 'USD',
         payee: {
           partyIdInfo: {
             partyIdType: '',

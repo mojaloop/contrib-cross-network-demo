@@ -4,7 +4,6 @@ import * as Chai from 'chai'
 import {v4 as uuid} from 'uuid'
 import chaiAsPromised from 'chai-as-promised'
 import { TransfersPostRequest, QuotesPostRequest, QuotesIDPutResponse, TransfersIDPutResponse, ErrorInformationObject } from '../../src/types/mojaloop-models/models'
-import { RequestMapEntry, TrackRequestsRule } from '../../src/rules/track-requests-rule'
 import { MojaloopRequestHandler, setPipelineReader } from '../../src/types/rule'
 import { MojaloopHttpRequest, MojaloopHttpReply } from '../../src/types/mojaloop-packets'
 import { ForeignExchangeRule } from '../../src/rules/fx-rule';
@@ -14,7 +13,6 @@ const assert = Object.assign(Chai.assert, sinon.assert)
 describe('FX Rule', function () {
 
   let fxRule: ForeignExchangeRule
-  let incomingHandler: MojaloopRequestHandler
   let outgoingHandler: MojaloopRequestHandler
 
   const transferId = uuid()
@@ -33,6 +31,7 @@ describe('FX Rule', function () {
         currency
       },
       amountType,
+      transferCurrency: currency,
       payee: {
         partyIdInfo: {
           partyIdType: '1',
@@ -84,6 +83,7 @@ describe('FX Rule', function () {
   function getPostTransferMessage(currency: string): TransfersPostRequest {
     return {
       transferId,
+      quoteId,
       payeeFsp: 'bobs-fsp',
       payerFsp: 'alices-fsp',
       amount: {
@@ -122,29 +122,30 @@ describe('FX Rule', function () {
       }})
     })
 
-    it('quote amount is converted for fixed SEND on incoming from Alice', async function () {
+    it('quote amount is converted for fixed SEND on outgoing from Alice', async function () {
 
-      incomingHandler = setPipelineReader('incoming', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
+      outgoingHandler = setPipelineReader('outgoing', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
         assert.deepEqual((request.body as QuotesPostRequest).amount, {
           currency: 'XOF',
           amount: '1000'
-        })      
+        })
+        assert.equal((request.body as QuotesPostRequest).transferCurrency, 'XOF')      
         return {} as MojaloopHttpReply 
       })
-      await incomingHandler(getPostQuoteRequest('SEND', 'USD'))
+      await outgoingHandler(getPostQuoteRequest('SEND', 'USD'))
 
     })
   
-    it('quote amount is not converted for fixed RECEIVE on incoming from Alice', async function () {
+    it('quote amount is not converted for fixed RECEIVE on outgoing from Alice', async function () {
 
-      incomingHandler = setPipelineReader('incoming', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
+      outgoingHandler = setPipelineReader('outgoing', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
         assert.deepEqual((request.body as QuotesPostRequest).amount, {
           currency: 'XOF',
           amount: '100'
         })      
         return {} as MojaloopHttpReply 
       })
-      await incomingHandler(getPostQuoteRequest('RECEIVE', 'XOF'))
+      await outgoingHandler(getPostQuoteRequest('RECEIVE', 'XOF'))
 
     })
   
@@ -174,16 +175,16 @@ describe('FX Rule', function () {
 
     })
   
-    it('transfer amount is converted on incoming from Alice', async function () {
+    it('transfer amount is converted on outgoing from Alice', async function () {
 
-      incomingHandler = setPipelineReader('incoming', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
+      outgoingHandler = setPipelineReader('outgoing', fxRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { 
         assert.deepEqual((request.body as TransfersPostRequest).amount, {
           currency: 'XOF',
           amount: '1000'
         })      
         return {} as MojaloopHttpReply 
       })
-      await incomingHandler(getPostTransferRequest('USD'))
+      await outgoingHandler(getPostTransferRequest('USD'))
 
     })
 

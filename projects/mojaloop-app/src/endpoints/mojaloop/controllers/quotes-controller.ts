@@ -9,7 +9,7 @@ const logger = log.child({ component: 'Quotes-Controller' })
 export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received post from ' + request.path, { data: request.payload, headers: request.headers })
-    const currency = (request.payload as QuotesPostRequest).amount.currency
+    const currency = (request.payload as QuotesPostRequest).transferCurrency
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
 
     const quotesPostRequest: MojaloopHttpRequest = {
@@ -28,8 +28,7 @@ export function create (request: hapi.Request, reply: hapi.ResponseToolkit) {
 export function update (request: hapi.Request, reply: hapi.ResponseToolkit) {
   try {
     logger.debug('Received put from ' + request.path, { data: request.payload, headers: request.headers })
-    const storedQuote = request.server.methods.getStoredQuoteById(request.params.id)
-    const currency = storedQuote.body.amount.currency
+    const currency = (request.payload as QuotesIDPutResponse).transferAmount.currency
     const endpoint: MojaloopHttpEndpoint = request.server.methods.getEndpoint(request.params.peerId, currency)
 
     const quotesIdPutRequest: MojaloopHttpRequest = {

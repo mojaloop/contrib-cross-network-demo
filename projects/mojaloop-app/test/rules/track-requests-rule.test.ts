@@ -13,12 +13,13 @@ const assert = Object.assign(Chai.assert, sinon.assert)
 describe('Store post request entry', function () {
 
   let trackRequestRule: TrackRequestsRule
-  let transferRequestEntryMap: Map<string, RequestMapEntry>
+  let transferPostRequestEntryMap: Map<string, RequestMapEntry>
+  let transferPutRequestEntryMap: Map<string, RequestMapEntry>
   let transferErrorRequestEntryMap: Map<string, RequestMapEntry>
-  let quoteRequestEntryMap: Map<string, RequestMapEntry>
+  let quotePostRequestEntryMap: Map<string, RequestMapEntry>
+  let quotePutRequestEntryMap: Map<string, RequestMapEntry>
   let quoteErrorRequestEntryMap: Map<string, RequestMapEntry>
   let incomingHandler: MojaloopRequestHandler
-  let outgoingHandler: MojaloopRequestHandler
 
   const transferId = uuid()
   const quoteId = uuid()
@@ -29,6 +30,7 @@ describe('Store post request entry', function () {
   }
   const postTransferMessage: TransfersPostRequest = {
     transferId,
+    quoteId,
     payeeFsp: 'bob',
     payerFsp: 'alice',
     amount: {
@@ -50,6 +52,7 @@ describe('Store post request entry', function () {
       currency: 'USD'
     },
     amountType: 'SEND',
+    transferCurrency: 'USD',
     payee: {
       partyIdInfo: {
         partyIdType: '1',
@@ -123,36 +126,61 @@ describe('Store post request entry', function () {
   }
 
   beforeEach(function () {
-    transferRequestEntryMap = new Map()
+    transferPostRequestEntryMap = new Map()
+    transferPutRequestEntryMap = new Map()
     transferErrorRequestEntryMap = new Map()
-    quoteRequestEntryMap = new Map()
+    quotePostRequestEntryMap = new Map()
+    quotePutRequestEntryMap = new Map()
     quoteErrorRequestEntryMap = new Map()
-    trackRequestRule = new TrackRequestsRule({ transferRequestEntryMap,  transferErrorRequestEntryMap, quoteRequestEntryMap, quoteErrorRequestEntryMap })
+    trackRequestRule = new TrackRequestsRule({ transferPostRequestEntryMap, transferPutRequestEntryMap,  transferErrorRequestEntryMap, quotePostRequestEntryMap, quotePutRequestEntryMap, quoteErrorRequestEntryMap, peerId: 'test-peer' })
     incomingHandler = setPipelineReader('incoming', trackRequestRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { return {} as MojaloopHttpReply })
-    outgoingHandler = setPipelineReader('outgoing', trackRequestRule, async (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> => { return {} as MojaloopHttpReply })
   })
 
   it('creates a RequestEntry from an incoming transfer post request', async function () {
-    assert.isUndefined(transferRequestEntryMap.get(transferId))
+    assert.isUndefined(transferPostRequestEntryMap.get(transferId))
 
     await incomingHandler(postTransferRequest)
 
-    assert.deepEqual(transferRequestEntryMap.get(transferId), {
+    assert.deepEqual(transferPostRequestEntryMap.get(transferId), {
       headers,
       body: postTransferRequest.body,
-      sentPut: false
+      sourcePeerId: 'test-peer'
+    })    
+  })
+
+  it('creates a RequestEntry from an incoming transfer put request', async function () {
+    assert.isUndefined(transferPutRequestEntryMap.get(transferId))
+
+    await incomingHandler(putTransferRequest)
+
+    assert.deepEqual(transferPutRequestEntryMap.get(transferId), {
+      headers,
+      body: putTransferRequest.body,
+      sourcePeerId: 'test-peer'
     })    
   })
 
   it('creates a RequestEntry from an incoming quote post request', async function () {
-    assert.isUndefined(quoteRequestEntryMap.get(quoteId))
+    assert.isUndefined(quotePostRequestEntryMap.get(quoteId))
 
     await incomingHandler(postQuoteRequest)
 
-    assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
+    assert.deepEqual(quotePostRequestEntryMap.get(quoteId), {
       headers,
       body: postQuoteRequest.body,
-      sentPut: false
+      sourcePeerId: 'test-peer'
+    })    
+  })
+
+  it('creates a RequestEntry from an incoming quote put request', async function () {
+    assert.isUndefined(quotePutRequestEntryMap.get(quoteId))
+
+    await incomingHandler(putQuoteRequest)
+
+    assert.deepEqual(quotePutRequestEntryMap.get(quoteId), {
+      headers,
+      body: putQuoteRequest.body,
+      sourcePeerId: 'test-peer'
     })    
   })
 
@@ -164,7 +192,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
       headers,
       body: putQuoteErrorRequest.body,
-      sentPut: false
+      sourcePeerId: 'test-peer'
     })    
   })
 
@@ -176,71 +204,7 @@ describe('Store post request entry', function () {
     assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
       headers,
       body: putTransferErrorRequest.body,
-      sentPut: false
+      sourcePeerId: 'test-peer'
     })    
-  })
-
-  it('updates request entry for outgoing transfer put request', async function () {
-    transferRequestEntryMap.set(transferId, {
-      headers,
-      body: putTransferRequest.body,
-      sentPut: false
-    })
-
-    await outgoingHandler(putTransferRequest)
-
-    assert.deepEqual(transferRequestEntryMap.get(transferId), {
-      headers,
-      body: putTransferRequest.body,
-      sentPut: true
-    })
-  })
-
-  it('updates request entry for outgoing quote put request', async function () {
-    quoteRequestEntryMap.set(quoteId, {
-      headers,
-      body: putQuoteRequest.body,
-      sentPut: false
-    })
-
-    await outgoingHandler(putQuoteRequest)
-
-    assert.deepEqual(quoteRequestEntryMap.get(quoteId), {
-      headers,
-      body: putQuoteRequest.body,
-      sentPut: true
-    })
-  })
-
-  it('updates request entry for outgoing transfer put error  request', async function () {
-    transferErrorRequestEntryMap.set(transferId, {
-      headers,
-      body: putTransferErrorRequest.body,
-      sentPut: false
-    })
-
-    await outgoingHandler(putTransferErrorRequest)
-
-    assert.deepEqual(transferErrorRequestEntryMap.get(transferId), {
-      headers,
-      body: putTransferErrorRequest.body,
-      sentPut: true
-    })
-  })
-
-  it('updates request entry for outgoing quote put error  request', async function () {
-    quoteErrorRequestEntryMap.set(quoteId, {
-      headers,
-      body: putQuoteErrorRequest.body,
-      sentPut: false
-    })
-
-    await outgoingHandler(putQuoteErrorRequest)
-
-    assert.deepEqual(quoteErrorRequestEntryMap.get(quoteId), {
-      headers,
-      body: putQuoteErrorRequest.body,
-      sentPut: true
-    })
   })
 })

@@ -23,7 +23,7 @@ export function isGet (message: MojaloopMessage): message is GetRequest {
 
 export function isQuotePostMessage (message: MojaloopMessage): message is QuotesPostRequest {
   // tslint:disable-next-line: strict-type-predicates
-  return (message as QuotesPostRequest).quoteId !== undefined
+  return (message as QuotesPostRequest).quoteId !== undefined && message['ilpPacket'] === undefined
 }
 
 export function isQuotePutErrorRequest (request: MojaloopHttpRequest): boolean {

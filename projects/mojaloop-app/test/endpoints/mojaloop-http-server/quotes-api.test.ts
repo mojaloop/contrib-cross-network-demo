@@ -30,6 +30,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       currency: 'USD'
     },
     amountType: 'SEND',
+    transferCurrency: 'USD',
     payee: {
       partyIdInfo: {
         partyIdType: '1',
@@ -72,7 +73,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers: {},
       body: {},
-      sentPut: false
+      sourcePeerId: 'test-peer1'
     }
   }
 
@@ -80,7 +81,23 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
     return {
       headers,
       body: postQuoteMessage,
-      sentPut: false
+      sourcePeerId: 'test-peer2'
+    }
+  }
+
+  const getStoredQuotePutById = (id: string) => {
+    return {
+      headers,
+      body: postQuoteMessage,
+      sourcePeerId: 'test-peer3'
+    }
+  }
+
+  const mapOutgoingTransferToIncoming = (id: string) => {
+    return {
+      headers,
+      body: postMessage,
+      sourcePeerId: 'test-peer'
     }
   }
 
@@ -90,7 +107,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       port: 7780
     })
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById })
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById, getStoredQuotePutById, mapOutgoingTransferToIncoming })
   })
 
   afterEach(function () {
@@ -213,7 +230,7 @@ describe('Mojaloop Http Endpoint Manager Quote API', function () {
       assert.equal(res.statusCode, 500)
     })
 
-    it('uses the currency in the amount field of the stored quote to choose the usd account for alice', async function () {
+    it('uses the currency in the amount field to choose the usd account for alice', async function () {
       const endpoint = new MojaloopHttpEndpoint({ url: 'http://localhost:7781/alice' })
       const getSpy = sinon.spy(endpointManager, 'get')
       endpoint.setIncomingRequestHandler(async (request: MojaloopHttpRequest) => {
