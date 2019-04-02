@@ -175,6 +175,7 @@ export class App {
           amount: request.body.amount, // take the amount from the request as the fx-rule will update it in the outgoing pipeline
           ilpPacket: request.body.ilpPacket,
           condition: request.body.condition,
+          expiration: request.body.expiration,
           extensionList: request.body.extensionList
         }
       }
