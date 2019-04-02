@@ -1,0 +1,3284 @@
+{
+	"info": {
+		"_postman_id": "22c6acfd-ad86-46d8-a0de-969c7e67a8c2",
+		"name": "Cross Currency",
+		"description": "Collection to setup and test doing cross-network payments",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Routing",
+					"item": [
+						{
+							"name": "USD",
+							"item": [
+								{
+									"name": "Add dfsp1 peer",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"id\": \"{{payerfsp}}\",\n\t\"relation\": \"peer\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add dfsp1 route",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.usd.{{payerfsp}}\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers/{{payerfsp}}/routes",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{payerfsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp peer",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"id\": \"{{fxpfsp}}\",\n\t\"relation\": \"peer\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp route",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.usd.{{fxpfsp}}\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers/{{fxpfsp}}/routes",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{fxpfsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp route for XOF network",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.xof\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers/{{fxpfsp}}/routes",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{fxpfsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "XOF",
+							"item": [
+								{
+									"name": "Add dfsp2 peer",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"id\": \"{{payeefsp}}\",\n\t\"relation\": \"peer\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_XOF_ROUTING}}/peers",
+											"host": [
+												"{{HOST_XOF_ROUTING}}"
+											],
+											"path": [
+												"peers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add dfsp2 route",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.xof.{{payeefsp}}\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_XOF_ROUTING}}/peers/{{payeefsp}}/routes",
+											"host": [
+												"{{HOST_XOF_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{payeefsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp peer",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n\t\"id\": \"{{fxpfsp}}\",\n\t\"relation\": \"peer\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_XOF_ROUTING}}/peers",
+											"host": [
+												"{{HOST_XOF_ROUTING}}"
+											],
+											"path": [
+												"peers"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp route",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.xof.{{fxpfsp}}\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_XOF_ROUTING}}/peers/{{fxpfsp}}/routes",
+											"host": [
+												"{{HOST_XOF_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{fxpfsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add fxp route for USD",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"prefix\": \"{{moja_address_space}}.usd\",\n    \"path\": [],\n    \"weight\": 100,\n    \"auth\": \"\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_USD_ROUTING}}/peers/{{fxpfsp}}/routes",
+											"host": [
+												"{{HOST_USD_ROUTING}}"
+											],
+											"path": [
+												"peers",
+												"{{fxpfsp}}",
+												"routes"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "Get USD Peers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{HOST_USD_ROUTING}}/peers",
+									"host": [
+										"{{HOST_USD_ROUTING}}"
+									],
+									"path": [
+										"peers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get XOF Peers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{HOST_XOF_ROUTING}}/peers",
+									"host": [
+										"{{HOST_XOF_ROUTING}}"
+									],
+									"path": [
+										"peers"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Hub",
+					"item": [
+						{
+							"name": "hub",
+							"item": [
+								{
+									"name": "Add Hub Account-HUB_RECONCILIATION-XOF",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "FSPIOP-Source",
+												"value": "{{payerfsp}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"HUB_RECONCILIATION\",\n  \"currency\": \"XOF\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/Hub/accounts",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"Hub",
+												"accounts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add Hub Account-HUB_MULTILATERAL_SETTLEMENT-XOF",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "FSPIOP-Source",
+												"type": "text",
+												"value": "{{payerfsp}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"HUB_MULTILATERAL_SETTLEMENT\",\n  \"currency\": \"XOF\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/Hub/accounts",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"Hub",
+												"accounts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add Hub Account-HUB_RECONCILIATION-USD",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "FSPIOP-Source",
+												"type": "text",
+												"value": "{{payerfsp}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"HUB_RECONCILIATION\",\n  \"currency\": \"USD\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/Hub/accounts",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"Hub",
+												"accounts"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add Hub Account-HUB_MULTILATERAL_SETTLEMENT-USD",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "FSPIOP-Source",
+												"type": "text",
+												"value": "{{payerfsp}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"HUB_MULTILATERAL_SETTLEMENT\",\n  \"currency\": \"USD\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/Hub/accounts",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"Hub",
+												"accounts"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "dfsp1",
+							"item": [
+								{
+									"name": "Add Participant",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{payerfsp}}\",\n  \"currency\": \"USD\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "POST - initialPositionAndLimits",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d24a7260-f322-4686-831d-35ff197b09b7",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"currency\": \"USD\",\n  \"limit\": {\n    \"type\": \"NET_DEBIT_CAP\",\n    \"value\": 10000\n  },\n  \"initialPosition\": 0\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/initialPositionAndLimits",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"initialPositionAndLimits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Set TRANSFER_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('payer_endpoint_prefix') + \"/transfers\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('payer_endpoint_prefix') + \"/transfers/{{transferId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_ERROR endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('payer_endpoint_prefix') + \"/transfers/{{transferId}}/error\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_ERROR\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('payer_endpoint_prefix') + \"/quotes\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('quoteId')",
+													"const url = pm.environment.get('payer_endpoint_prefix') + \"/quotes/{{quoteId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Get Endpoints",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payerfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payerfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "dfsp2",
+							"item": [
+								{
+									"name": "Add Participant",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{payeefsp}}\",\n  \"currency\": \"XOF\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "POST - initialPositionAndLimits",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d24a7260-f322-4686-831d-35ff197b09b7",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"currency\": \"XOF\",\n  \"limit\": {\n    \"type\": \"NET_DEBIT_CAP\",\n    \"value\": 10000\n  },\n  \"initialPosition\": 0\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/initialPositionAndLimits",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"initialPositionAndLimits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Set TRANSFER_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('payee_endpoint_prefix') + \"/transfers\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('payee_endpoint_prefix') + \"/transfers/{{transferId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_ERROR endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('payee_endpoint_prefix') + \"/transfers/{{transferId}}/error\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_ERROR\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('payee_endpoint_prefix') + \"/quotes\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('quoteId')",
+													"const url = pm.environment.get('payee_endpoint_prefix') + \"/quotes/{{quoteId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Get Endpoints",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{payeefsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{payeefsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							],
+							"_postman_isSubFolder": true
+						},
+						{
+							"name": "fxp",
+							"item": [
+								{
+									"name": "Add Participant - USD",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{fxpfsp}}\",\n  \"currency\": \"USD\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "POST - initialPositionAndLimits - USD",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d24a7260-f322-4686-831d-35ff197b09b7",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"currency\": \"USD\",\n  \"limit\": {\n    \"type\": \"NET_DEBIT_CAP\",\n    \"value\": 10000\n  },\n  \"initialPosition\": 0\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/initialPositionAndLimits",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"initialPositionAndLimits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add Participant - XOF",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{fxpfsp}}\",\n  \"currency\": \"XOF\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "POST - initialPositionAndLimits - XOF",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"id": "d24a7260-f322-4686-831d-35ff197b09b7",
+												"exec": [
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"currency\": \"XOF\",\n  \"limit\": {\n    \"type\": \"NET_DEBIT_CAP\",\n    \"value\": 99999\n  },\n  \"initialPosition\": 0\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/initialPositionAndLimits",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"initialPositionAndLimits"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Set TRANSFER_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('fxpfsp_endpoint_prefix') + \"/transfers\";",
+													"pm.variables.set('url', url);"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('fxpfsp_endpoint_prefix') + \"/transfers/{{transferId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set TRANSFER_ERROR endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('transferId')",
+													"const url = pm.environment.get('fxpfsp_endpoint_prefix') + \"/transfers/{{transferId}}/error\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_TRANSFER_ERROR\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_POST endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"const url = pm.environment.get('fxpfsp_endpoint_prefix') + \"/quotes\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_POST\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Set QUOTE_PUT endpoint",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"pm.environment.unset('quoteId')",
+													"const url = pm.environment.get('fxpfsp_endpoint_prefix') + \"/quotes/{{quoteId}}\";",
+													"pm.variables.set('url', url);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"type\": \"FSPIOP_CALLBACK_URL_QUOTE_PUT\",\n  \"value\": \"{{url}}\"\n}"
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								},
+								{
+									"name": "Get Endpoints",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"id": "c8317387-9fbb-42e6-a624-1710c875e96f",
+												"exec": [
+													"",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{BEARER_TOKEN}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Cache-Control",
+												"value": "no-cache"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{HOST_CENTRAL_LEDGER}}/participants/{{fxpfsp}}/endpoints",
+											"host": [
+												"{{HOST_CENTRAL_LEDGER}}"
+											],
+											"path": [
+												"participants",
+												"{{fxpfsp}}",
+												"endpoints"
+											]
+										},
+										"description": "Generated from a curl request: \ncurl -i -X POST     http://test-central-ledger.mojaloop.test/admin/participants/testfsp2/initialPositionAndLimits     -H 'Cache-Control: no-cache'     -H 'Content-Type: application/json'     -d '{\n    \\\"currency\\\": \\\"USD\\\",\n    \\\"limit\\\": {\n      \\\"type\\\": \\\"NET_DEBIT_CAP\\\",\n      \\\"value\\\": 1000\n    },\n    \\\"initialPosition\\\": 0\n  }'"
+									},
+									"response": [
+										{
+											"name": "2. Create Initial Position and Limits",
+											"originalRequest": {
+												"method": "POST",
+												"header": [
+													{
+														"key": "Cache-Control",
+														"value": "no-cache"
+													},
+													{
+														"key": "Content-Type",
+														"value": "application/json"
+													}
+												],
+												"body": {
+													"mode": "raw",
+													"raw": "{\n    \"currency\": \"USD\",\n    \"limit\": {\n      \"type\": \"NET_DEBIT_CAP\",\n      \"value\": 1000\n    },\n    \"initialPosition\": 0\n  }"
+												},
+												"url": {
+													"raw": "http://test-central-ledger.mojaloop.live/admin/participants/testfsp/initialPositionAndLimits",
+													"protocol": "http",
+													"host": [
+														"test-central-ledger",
+														"mojaloop",
+														"live"
+													],
+													"path": [
+														"admin",
+														"participants",
+														"testfsp",
+														"initialPositionAndLimits"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							],
+							"_postman_isSubFolder": true
+						}
+					],
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "FXP",
+					"item": [
+						{
+							"name": "Create Mowali USD account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"id\": \"{{mowaliUsdId}}\",\n\t\"assetScale\": \"{{mowaliUsdAssetScale}}\",\n\t\"assetCode\": \"{{mowaliUsdAssetCode}}\",\n\t\"mojaAddress\": \"{{mowaliUsdMojaAddress}}\",\n\t\"relation\": \"{{mowaliUsdRelation}}\",\n\t\"url\": \"{{mowaliUsdUrl}}\",\n\t\"rules\": {{mowaliUsdRules}}\n}"
+								},
+								"url": {
+									"raw": "http://{{HOST_CNP}}/admin/participants",
+									"protocol": "http",
+									"host": [
+										"{{HOST_CNP}}"
+									],
+									"path": [
+										"admin",
+										"participants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Mowali XOF account",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"id\": \"{{mowaliXofId}}\",\n\t\"assetScale\": \"{{mowaliXofAssetScale}}\",\n\t\"assetCode\": \"{{mowaliXofAssetCode}}\",\n\t\"mojaAddress\": \"{{mowaliXofMojaAddress}}\",\n\t\"relation\": \"{{mowaliXofRelation}}\",\n\t\"url\": \"{{mowaliXofUrl}}\",\n\t\"rules\": {{mowaliXofRules}}\n}"
+								},
+								"url": {
+									"raw": "http://{{HOST_CNP}}/admin/participants",
+									"protocol": "http",
+									"host": [
+										"{{HOST_CNP}}"
+									],
+									"path": [
+										"admin",
+										"participants"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"_postman_isSubFolder": true
+				}
+			]
+		},
+		{
+			"name": "Golden Path",
+			"item": [
+				{
+					"name": "1. Query Parties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Cache-Control",
+								"value": "no-cache"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Date",
+								"value": "{{partyDate}}"
+							},
+							{
+								"key": "FSPIOP-Source",
+								"value": "{{payerfsp}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}/parties/{{partiesType}}/{{partyId}}",
+							"protocol": "http",
+							"host": [
+								"{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}"
+							],
+							"path": [
+								"parties",
+								"{{partiesType}}",
+								"{{partyId}}"
+							]
+						},
+						"description": "Get Quote from Payee FSP\n\n*Note: Not implemented in Interop-Switch"
+					},
+					"response": []
+				},
+				{
+					"name": "3. Request Quote",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b54bd5ea-2d5e-4bac-8461-b0df911fd263",
+								"exec": [
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_QUOTE_UUID_ON_QUOTE') === 'true') {",
+									"    var uuid = require('uuid');",
+									"    var generatedUUID = uuid.v4();",
+									"    pm.environment.set('quoteId', generatedUUID);",
+									"}",
+									"",
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_TRANSFER_UUID_ON_QUOTE') === 'true') {",
+									"    var uuid = require('uuid');",
+									"    var generatedUUID = uuid.v4();",
+									"    pm.environment.set('transferId', generatedUUID);",
+									"}",
+									"",
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_TRANSACTION_UUID_ON_QUOTE') === 'true') {",
+									"    var uuid = require('uuid');",
+									"    var generatedUUID = uuid.v4();",
+									"    pm.environment.set('transactionRequestId', generatedUUID);",
+									"}",
+									"",
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_QUOTE_DATE') === 'true') {",
+									"    var moment = require('moment');",
+									"    pm.environment.set('quoteDate', (new Date()).toUTCString());",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.interoperability.quotes+json;version=1.0"
+							},
+							{
+								"key": "Cache-Control",
+								"value": "no-cache"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/vnd.interoperability.quotes+json;version=1.0"
+							},
+							{
+								"key": "Date",
+								"value": "{{quoteDate}}"
+							},
+							{
+								"key": "FSPIOP-Destination",
+								"value": "{{payeefsp}}",
+								"disabled": true
+							},
+							{
+								"key": "FSPIOP-Source",
+								"value": "{{payerfsp}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quoteId\": \"{{quoteId}}\",\n  \"transactionId\": \"{{transferId}}\",\n  \"transactionRequestId\": \"{{transactionRequestId}}\",\n  \"payee\": {\n    \"partyIdInfo\": {\n      \"partyIdType\": \"MSISDN\",\n      \"partyIdentifier\": \"16135551212\",\n      \"partySubIdOrType\": \"moja.mowali.xof.dfsp2\",\n      \"fspId\": \"1234\"\n    }\n  },\n  \"payer\": {\n    \"partyIdInfo\": {\n      \"partyIdType\": \"MSISDN\",\n      \"partyIdentifier\": \"16135551212\",\n      \"partySubIdOrType\": \"moja.mowali.usd.dfsp1\",\n      \"fspId\": \"1234\"\n    }\n  },\n  \"amountType\": \"SEND\",\n  \"amount\": {\n    \"currency\": \"USD\",\n    \"amount\": \"123.45\"\n  },\n  \"transferCurrency\": \"USD\",\n  \"fees\": {\n    \"currency\": \"USD\",\n    \"amount\": \"1.45\"\n  },\n  \"transactionType\": {\n    \"scenario\": \"DEPOSIT\",\n    \"subScenario\": \"locally defined sub-scenario\",\n    \"initiator\": \"PAYEE\",\n    \"initiatorType\": \"CONSUMER\",\n    \"refundInfo\": {\n      \"originalTransactionId\": \"b51ec534-ee48-4575-b6a9-ead2955b8069\",\n      \"refundReason\": \"free text indicating reason for the refund\"\n    },\n    \"balanceOfPayments\": \"123\"\n  },\n  \"geoCode\": {\n    \"latitude\": \"+45.4215\",\n    \"longitude\": \"+75.6972\"\n  },\n  \"note\": \"Free-text memo\",\n  \"expiration\": \"2016-05-24T08:38:08.699-04:00\",\n  \"extensionList\": {\n    \"extension\": [\n      {\n        \"key\": \"key1\",\n        \"value\": \"value1\"\n      },\n      {\n        \"key\": \"key2\",\n        \"value\": \"value2\"\n      }\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "http://{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}/quotes",
+							"protocol": "http",
+							"host": [
+								"{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}"
+							],
+							"path": [
+								"quotes"
+							]
+						},
+						"description": "Create a Quote from Payer FSP to Payee FSP"
+					},
+					"response": []
+				},
+				{
+					"name": "4. Respond to Quote",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b54bd5ea-2d5e-4bac-8461-b0df911fd263",
+								"exec": [
+									"",
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_QUOTE_DATE') === 'true') {",
+									"    var moment = require('moment');",
+									"    pm.environment.set('quoteDate', (new Date()).toUTCString());",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.interoperability.quotes+json;version=1.0"
+							},
+							{
+								"key": "Cache-Control",
+								"value": "no-cache"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/vnd.interoperability.quotes+json;version=1.0"
+							},
+							{
+								"key": "Date",
+								"value": "{{quoteDate}}"
+							},
+							{
+								"key": "FSPIOP-Destination",
+								"value": "fxp"
+							},
+							{
+								"key": "FSPIOP-Source",
+								"value": "{{payeefsp}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transferAmount\": {\n        \"amount\": \"71550.38\",\n        \"currency\": \"XOF\"\n    },\n    \"transferDestination\": \"dfsp2\",\n    \"expiration\": \"{{quoteExpiration}}\",\n    \"ilpPacket\": \"AQAAAAAAAACWEHByaXZhdGUucGF5ZWVmc3CCAiB7InRyYW5zYWN0aW9uSWQiOiI3NDk3ZWY1Ni05ZWM1LTRiMjEtOWQ5Mi0xMDc4NjVmN2QwYjIiLCJxdW90ZUlkIjoiZThjMGU2YmUtN2Y2NS00ZjI2LWI3ZjktYjVlMDViYmQwY2I3IiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNzcxMzgwMzkxMiIsImZzcElkIjoicGF5ZWVmc3AifSwicGVyc29uYWxJbmZvIjp7ImNvbXBsZXhOYW1lIjp7fX19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI3NzEzODAzOTEwIiwiZnNwSWQiOiJwYXllcmZzcCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnt9fX0sImFtb3VudCI6eyJjdXJyZW5jeSI6IlVTRCIsImFtb3VudCI6IjE1MCJ9LCJ0cmFuc2FjdGlvblR5cGUiOnsic2NlbmFyaW8iOiJERVBPU0lUIiwic3ViU2NlbmFyaW8iOiJERVBPU0lUIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIiLCJyZWZ1bmRJbmZvIjp7fX19\",\n    \"condition\": \"3HNdw6LdPD4KASWijlNkvCJ0DmFz40aUeGZm1qNRy14\"\n}"
+						},
+						"url": {
+							"raw": "http://{{HOST_MOJALOOP}}/quotes/{{quoteId}}",
+							"protocol": "http",
+							"host": [
+								"{{HOST_MOJALOOP}}"
+							],
+							"path": [
+								"quotes",
+								"{{quoteId}}"
+							]
+						},
+						"description": "Update Quote from Payee FSP to Payer FSP"
+					},
+					"response": []
+				},
+				{
+					"name": "6.a. Transfer Prepare Request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b2b41c85-4ff8-4a6a-91d0-b0fbcefb710a",
+								"exec": [
+									"// if (pm.environment.get('CONFIG_GENERATE_NEW_TRANSFER_UUID_ON_PREPARE') === 'true') {",
+									"//     var uuid = require('uuid');",
+									"//     var generatedUUID = uuid.v4();",
+									"//     pm.environment.set('transferId', generatedUUID);",
+									"// }",
+									"",
+									"if (pm.environment.get('CONFIG_GENERATE_NEW_PREPARE_DATE') === 'true') {",
+									"    pm.environment.set('transferDate', (new Date()).toUTCString());",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.interoperability.transfers+json;version=1.0"
+							},
+							{
+								"key": "Cache-Control",
+								"value": "no-cache"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/vnd.interoperability.transfers+json;version=1.0",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "{{transferDate}}"
+							},
+							{
+								"key": "FSPIOP-destination",
+								"value": "{{fxpfsp}}"
+							},
+							{
+								"key": "FSPIOP-Source",
+								"value": "{{payerfsp}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"transferId\": \"{{transferId}}\",\n \"quoteId\": \"{{quoteId}}\",\n \"payeeFsp\": \"{{fxpfsp}}\",\n \"payerFsp\": \"{{payerfsp}}\",\n \"amount\": {\n   \"amount\": \"125\",\n   \"currency\": \"USD\"\n },\n \"ilpPacket\": \"AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9\",\n \"condition\": \"{{condition}}\",\n \"expiration\": \"{{transferExpiration}}\"\n}"
+						},
+						"url": {
+							"raw": "http://interop-switch-js.local/transfers",
+							"protocol": "http",
+							"host": [
+								"interop-switch-js",
+								"local"
+							],
+							"path": [
+								"transfers"
+							]
+						},
+						"description": "Create a Transfer Prepare Request\n\n*Note: This request is from the Payer to the Payee"
+					},
+					"response": [
+						{
+							"name": "1. Transfer Prepare Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Cache-Control",
+										"value": "no-cache"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Date",
+										"value": "2017-11-02"
+									},
+									{
+										"key": "FSPIOP-Destination",
+										"value": "payeefsp"
+									},
+									{
+										"key": "FSPIOP-Source",
+										"value": "payerfsp"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n \"transferId\": \"{{transferId}}\",\n \"payeeFsp\": \"payeefsp\",\n \"payerFsp\": \"payerfsp\",\n \"amount\": {\n   \"amount\": \"100\",\n   \"currency\": \"USD\"\n },\n \"ilpPacket\": \"AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9\",\n \"condition\": \"uU0nuZNNPgilLlLX2n2r-sSE7-N6U4DukIj3rOLvzek\",\n \"expiration\": \"2018-11-08T21:31:00.534+01:00\"\n}"
+								},
+								"url": {
+									"raw": "http://test-ml-api-adapter.mojaloop.live/transfers",
+									"protocol": "http",
+									"host": [
+										"test-ml-api-adapter",
+										"mojaloop",
+										"live"
+									],
+									"path": [
+										"transfers"
+									]
+								}
+							},
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Connection",
+									"value": "keep-alive",
+									"name": "Connection",
+									"description": "Options that are desired for the connection"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0",
+									"name": "Content-Length",
+									"description": "The length of the response body in octets (8-bit bytes)"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 22 Aug 2018 10:51:39 GMT",
+									"name": "Date",
+									"description": "The date and time that the message was sent"
+								},
+								{
+									"key": "Server",
+									"value": "nginx/1.13.8",
+									"name": "Server",
+									"description": "A name for the server"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache",
+									"name": "cache-control",
+									"description": "Tells all caching mechanisms from server to client whether they may cache this object. It is measured in seconds"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"transferId\": \"b1b0dcc4-4811-48f6-a312-b73a7018ba58\",\n \"payeeFsp\": \"payeefsp\",\n \"payerFsp\": \"payerfsp\",\n \"amount\": {\n   \"amount\": \"100\",\n   \"currency\": \"USD\"\n },\n \"ilpPacket\": \"AQAAAAAAAABkEGcuZXdwMjEuaWQuODAwMjCCAhd7InRyYW5zYWN0aW9uSWQiOiJmODU0NzdkYi0xMzVkLTRlMDgtYThiNy0xMmIyMmQ4MmMwZDYiLCJxdW90ZUlkIjoiOWU2NGYzMjEtYzMyNC00ZDI0LTg5MmYtYzQ3ZWY0ZThkZTkxIiwicGF5ZWUiOnsicGFydHlJZEluZm8iOnsicGFydHlJZFR5cGUiOiJNU0lTRE4iLCJwYXJ0eUlkZW50aWZpZXIiOiIyNTYxMjM0NTYiLCJmc3BJZCI6IjIxIn19LCJwYXllciI6eyJwYXJ0eUlkSW5mbyI6eyJwYXJ0eUlkVHlwZSI6Ik1TSVNETiIsInBhcnR5SWRlbnRpZmllciI6IjI1NjIwMTAwMDAxIiwiZnNwSWQiOiIyMCJ9LCJwZXJzb25hbEluZm8iOnsiY29tcGxleE5hbWUiOnsiZmlyc3ROYW1lIjoiTWF0cyIsImxhc3ROYW1lIjoiSGFnbWFuIn0sImRhdGVPZkJpcnRoIjoiMTk4My0xMC0yNSJ9fSwiYW1vdW50Ijp7ImFtb3VudCI6IjEwMCIsImN1cnJlbmN5IjoiVVNEIn0sInRyYW5zYWN0aW9uVHlwZSI6eyJzY2VuYXJpbyI6IlRSQU5TRkVSIiwiaW5pdGlhdG9yIjoiUEFZRVIiLCJpbml0aWF0b3JUeXBlIjoiQ09OU1VNRVIifSwibm90ZSI6ImhlaiJ9\",\n \"condition\": \"uU0nuZNNPgilLlLX2n2r-sSE7-N6U4DukIj3rOLvzek\",\n \"expiration\": \"2018-11-08T21:31:00.534+01:00\"\n}"
+						}
+					]
+				},
+				{
+					"name": "7.a. Transfer Fulfil Request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "f93d144c-1fdb-4d79-a1f5-419478542b99",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.interoperability.transfers+json;version=1.0"
+							},
+							{
+								"key": "Cache-Control",
+								"value": "no-cache"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/vnd.interoperability.transfers+json;version=1.0"
+							},
+							{
+								"key": "Date",
+								"value": "{{transferDate}}"
+							},
+							{
+								"key": "FSPIOP-Destination",
+								"value": "{{payerfsp}}"
+							},
+							{
+								"key": "FSPIOP-Source",
+								"value": "{{payeefsp}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"fulfilment\": \"{{fulfilment}}\",\n\t\"completedTimestamp\": \"{{currentTimestamp}}\",\n\t\"transferState\": \"COMMITTED\"\n}"
+						},
+						"url": {
+							"raw": "http://{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}/transfers/{{transferId}}",
+							"protocol": "http",
+							"host": [
+								"{{HOST_MOJALOOP}}{{BASE_MOJALOOP}}"
+							],
+							"path": [
+								"transfers",
+								"{{transferId}}"
+							]
+						},
+						"description": "Create a Transfer Fulfil Request\n\n*Note: This must be in response to a Transfer Prepare Request from the Payee to the Payer"
+					},
+					"response": [
+						{
+							"name": "2. Transfer Fulfil Request",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "3.0"
+									},
+									{
+										"key": "Cache-Control",
+										"value": "no-cache"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Date",
+										"value": "2017-11-02"
+									},
+									{
+										"key": "FSPIOP-Destination",
+										"value": "payerfsp"
+									},
+									{
+										"key": "FSPIOP-Source",
+										"value": "payeefsp"
+									},
+									{
+										"key": "Postman-Token",
+										"value": "d9835d85-71c1-4f91-a064-81bc60e8d664"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"fulfilment\": \"uz0FAeutW6o8Mz7OmJh8ALX6mmsZCcIDOqtE01eo4uI\",\n\t\"completedTimestamp\": \"2018-06-05T08:38:08.699-04:00\",\n\t\"transferState\": \"COMMITTED\"\n}"
+								},
+								"url": {
+									"raw": "http://test-ml-api-adapter.mojaloop.live/transfers/{{transferId}}",
+									"protocol": "http",
+									"host": [
+										"test-ml-api-adapter",
+										"mojaloop",
+										"live"
+									],
+									"path": [
+										"transfers",
+										"{{transferId}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "Connection",
+									"value": "keep-alive",
+									"name": "Connection",
+									"description": "Options that are desired for the connection"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0",
+									"name": "Content-Length",
+									"description": "The length of the response body in octets (8-bit bytes)"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 22 Aug 2018 10:20:54 GMT",
+									"name": "Date",
+									"description": "The date and time that the message was sent"
+								},
+								{
+									"key": "Server",
+									"value": "nginx/1.13.8",
+									"name": "Server",
+									"description": "A name for the server"
+								},
+								{
+									"key": "cache-control",
+									"value": "no-cache",
+									"name": "cache-control",
+									"description": "Tells all caching mechanisms from server to client whether they may cache this object. It is measured in seconds"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		}
+	]
+}
