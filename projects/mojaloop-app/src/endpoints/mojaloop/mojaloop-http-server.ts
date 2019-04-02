@@ -8,6 +8,7 @@ export interface EndpointManagerServices {
   getStoredTransferById: (id: string) => RequestMapEntry | undefined
   getStoredQuoteById: (id: string) => RequestMapEntry | undefined
   getStoredQuotePutById: (id: string) => RequestMapEntry | undefined
+  mapOutgoingTransferToIncoming: (id: string) => RequestMapEntry
 }
 
 export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoint> {
@@ -19,6 +20,7 @@ export class MojaloopHttpEndpointManager extends Map<string, MojaloopHttpEndpoin
     server.method('getStoredTransferById', services.getStoredTransferById)
     server.method('getStoredQuoteById', services.getStoredQuoteById)
     server.method('getStoredQuotePutById', services.getStoredQuotePutById)
+    server.method('mapOutgoingTransferToIncoming', services.mapOutgoingTransferToIncoming)
 
     const routes: hapi.ServerRoute[] = [...TransferRoutes, ...QuotesRoutes]
     routes.forEach(route => server.route(route))

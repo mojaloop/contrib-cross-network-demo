@@ -139,9 +139,25 @@ describe('FXP receives transfer post flowing from Alice to Bob (USD to XOF)', fu
     })
   })
 
+  it('creates a new transfer and stores a map to the original transfer post', async function () {
+    const postTransferRequest: MojaloopHttpRequest = {
+      headers: getHeaders('transfers', 'blue-fsp', 'fx'),
+      body: getTransferPostMessage('100', 'USD', 'fxp', 'blue-dfsp', transferId, quoteId, expiry, ilpPacket, condition)
+    }
+
+    await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
+
+    const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
+    const newTransferId = outgoingPostBody.transferId
+    const incomingTransfer = fxp.mapOutgoingTransferToIncoming(newTransferId)
+    assert.deepEqual(incomingTransfer.body, postTransferRequest.body)
+    assert.notEqual(incomingTransfer.body.transferId, newTransferId)
+  })
+
 })
 
 describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', function () {
+  let newTransferId: string
   beforeEach(async function () {
     fxp = new App()
     fxp.start()
@@ -167,6 +183,8 @@ describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', fun
     await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
     await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
     await axios.post(`${serverBaseUrl}/transfers`, postTransferRequest.body, { headers: postTransferRequest.headers })
+    const outgoingTransferPost = xofEndpointStub.getCall(1).args[0]
+    newTransferId = outgoingTransferPost.body.transferId
     assert.isNotNull(fxp.getStoredQuotePostById(quoteId))
     assert.isNotNull(fxp.getStoredQuotePutById(quoteId))
     assert.isNotNull(fxp.getStoredTransferPostById(transferId))
@@ -182,17 +200,32 @@ describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', fun
 
   it('sets fspiop-source to fxp and fspiop-destination to blue-dfsp', async function () {
     const putTransferRequest: MojaloopHttpRequest = {
-      objectId: transferId,
+      objectId: newTransferId,
       headers: getHeaders('transfers', 'red-dfsp', 'fxp'),
       body: getTransferPutMessage('COMMITTED')
     }
 
-    await axios.put(`${serverBaseUrl}/transfers/${transferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
+    await axios.put(`${serverBaseUrl}/transfers/${newTransferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
 
     sinon.assert.calledOnce(usdEndpointStub)
     const outgoingPostHeaders = usdEndpointStub.getCall(0).args[0].headers
     
     assert.equal(outgoingPostHeaders['fspiop-destination'], 'blue-dfsp')
     assert.equal(outgoingPostHeaders['fspiop-source'], 'fxp')
+  })
+
+  it('sets transferState to that received from the transfer put request', async function () {
+    const putTransferRequest: MojaloopHttpRequest = {
+      objectId: newTransferId,
+      headers: getHeaders('transfers', 'red-dfsp', 'fxp'),
+      body: getTransferPutMessage('ABORTED')
+    }
+
+    await axios.put(`${serverBaseUrl}/transfers/${newTransferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
+
+    sinon.assert.calledOnce(usdEndpointStub)
+    const outgoingPostBody = usdEndpointStub.getCall(0).args[0].body
+    
+    assert.equal(outgoingPostBody['transferState'], 'ABORTED')
   })
 })

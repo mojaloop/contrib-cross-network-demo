@@ -10,6 +10,7 @@ import { Router as RoutingTable, RouteManager } from 'ilp-routing'
 import { TrackRequestsRule, RequestMapEntry } from './rules/track-requests-rule'
 import { Money } from './types/mojaloop-models/money'
 import { ForeignExchangeRule } from './rules/fx-rule'
+import { v4 as uuid } from 'uuid'
 
 const logger = log.child({ component: 'app' })
 
@@ -20,7 +21,9 @@ export interface AppOptions {
 export class App {
   routingTable: RoutingTable = new RoutingTable()
   routeManager: RouteManager = new RouteManager(this.routingTable)
-  private _transferPostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private outgoingToIncomingTransferMap: Map<string, string> = new Map()
+  private _outgoingTransferPostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
+  private _incomingTransferPostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _transferPutRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _transferErrorRequestEntryMap: Map<string, RequestMapEntry> = new Map()
   private _quotePostRequestEntryMap: Map<string, RequestMapEntry> = new Map()
@@ -56,7 +59,7 @@ export class App {
       logger.info('INCOMING ' + request.info.remoteAddress + ': ' + request.method.toUpperCase() + ' ' + request.path)
     })
 
-    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferPostById.bind(this), getStoredQuoteById: this.getStoredQuotePostById.bind(this), getStoredQuotePutById: this.getStoredQuotePutById.bind(this) })
+    this._httpEndpointManager = new MojaloopHttpEndpointManager(this._httpServer, { getStoredTransferById: this.getStoredTransferPostById.bind(this), getStoredQuoteById: this.getStoredQuotePostById.bind(this), getStoredQuotePutById: this.getStoredQuotePutById.bind(this), mapOutgoingTransferToIncoming: this.mapOutgoingTransferToIncoming.bind(this) })
   }
 
   public async start (): Promise<void> {
@@ -148,6 +151,7 @@ export class App {
   public async sendOutgoingRequest (request: MojaloopHttpRequest): Promise<MojaloopHttpReply> {
     let destination = ''
     let nextHop = ''
+    let outgoingRequest: MojaloopHttpRequest = request
     if (isQuotePostMessage(request.body)) {
       destination = request.body.payee.partyIdInfo.partySubIdOrType || ''
       nextHop = this.routingTable.nextHop(destination)
@@ -158,10 +162,26 @@ export class App {
     } else if (isTransferPostMessage(request.body)) {
       const storedQuotePutRequest = this.getStoredQuotePutById(request.body.quoteId)
       nextHop = storedQuotePutRequest.sourcePeerId
-      request.body.payerFsp = this._mojaId
-      request.body.payeeFsp = storedQuotePutRequest.body.transferDestination
+
+      // create new transfer
+      const newTransferId = uuid()
+      let newTransferPostRequest: MojaloopHttpRequest = {
+        headers: request.headers,
+        body: {
+          transferId: newTransferId,
+          quoteId: request.body.quoteId,
+          payerFsp: this._mojaId,
+          payeeFsp: storedQuotePutRequest.body.transferDestination,
+          amount: request.body.amount, // take the amount from the request as the fx-rule will update it in the outgoing pipeline
+          ilpPacket: request.body.ilpPacket,
+          condition: request.body.condition,
+          extensionList: request.body.extensionList
+        }
+      }
+      outgoingRequest = newTransferPostRequest
+      this.outgoingToIncomingTransferMap.set(newTransferId, request.body.transferId)
     } else if (isTransferPutMessage(request.body)) {
-      const storedTransferPostRequest = this.getStoredTransferPostById(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
+      const storedTransferPostRequest = this.mapOutgoingTransferToIncoming(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
       nextHop = storedTransferPostRequest.sourcePeerId
     }
     const handler = this._outgoingRequestHandlers.get(nextHop)
@@ -171,11 +191,11 @@ export class App {
       throw new Error(`No handler set for ${nextHop}`)
     }
 
-    request.headers = this._updateRequestHeaders(request, nextHop)
+    outgoingRequest.headers = this._updateRequestHeaders(outgoingRequest, nextHop)
 
-    logger.debug('sending outgoing Packet', { destination, nextHop, headers: request.headers })
+    logger.debug('sending outgoing Packet', { destination, nextHop, headers: outgoingRequest.headers })
 
-    return handler(request)
+    return handler(outgoingRequest)
   }
 
   private _updateRequestHeaders (request: MojaloopHttpRequest, nextHop: string) {
@@ -189,7 +209,7 @@ export class App {
       const storedQuotePutRequest = this.getStoredQuotePutById(request.body.quoteId)
       newHeaders = Object.assign(newHeaders, { 'fspiop-source': this._mojaId, 'fspiop-destination': storedQuotePutRequest.body.transferDestination, 'content-type': 'application/vnd.interoperability.transfers+json;version=1.0', 'accept': 'application/vnd.interoperability.transfers+json;version=1.0' })
     } else if (isTransferPutMessage(request.body)) {
-      const requestEntry = this._transferPostRequestEntryMap.get(request.objectId || '')
+      const requestEntry = this.mapOutgoingTransferToIncoming(request.objectId || '')
       if (!requestEntry) {
         logger.error('No transfer post request received for quoteId=' + request.objectId, { request })
         throw new Error('No transfer post request received for quoteId=' + request.objectId)
@@ -257,7 +277,7 @@ export class App {
             quotePostRequestEntryMap: this._quotePostRequestEntryMap,
             quotePutRequestEntryMap: this._quotePutRequestEntryMap,
             transferErrorRequestEntryMap: this._transferErrorRequestEntryMap,
-            transferPostRequestEntryMap: this._transferPostRequestEntryMap,
+            transferPostRequestEntryMap: this._incomingTransferPostRequestEntryMap,
             transferPutRequestEntryMap: this._transferPutRequestEntryMap,
             peerId: peerInfo.id
           })
@@ -273,7 +293,7 @@ export class App {
   }
 
   getStoredTransferPostById (id: string): RequestMapEntry {
-    const transfer = this._transferPostRequestEntryMap.get(id)
+    const transfer = this._incomingTransferPostRequestEntryMap.get(id)
     if (!transfer) {
       throw new Error('No transfer post request found for transferId=' + id)
     }
@@ -294,6 +314,16 @@ export class App {
       throw new Error('No quote put request found for quoteId=' + id)
     }
     return quote
+  }
+
+  mapOutgoingTransferToIncoming (id: string): RequestMapEntry {
+    const incomingTransferId = this.outgoingToIncomingTransferMap.get(id)
+
+    if (!incomingTransferId) {
+      throw new Error('No incoming post transfer request found for outgoing transfer post with id=' + id)
+    }
+
+    return this.getStoredTransferPostById(incomingTransferId)
   }
 
 }

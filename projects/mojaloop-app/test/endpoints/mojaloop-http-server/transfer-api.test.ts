@@ -73,13 +73,21 @@ describe('Mojaloop Http Endpoint Manager Transfer API', function () {
     }
   }
 
+  const mapOutgoingTransferToIncoming = (id: string) => {
+    return {
+      headers,
+      body: postMessage,
+      sourcePeerId: 'test-peer'
+    }
+  }
+
   beforeEach(function () {
     httpServer = new hapi.Server({
       host: '0.0.0.0',
       port: 7780
     })
     httpServer.start()
-    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById, getStoredQuotePutById})
+    endpointManager = new MojaloopHttpEndpointManager(httpServer, { getStoredTransferById, getStoredQuoteById, getStoredQuotePutById, mapOutgoingTransferToIncoming})
   })
 
   afterEach(function () {
