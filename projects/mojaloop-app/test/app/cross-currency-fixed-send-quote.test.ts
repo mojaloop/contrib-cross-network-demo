@@ -243,4 +243,98 @@ describe('FXP receives fixed SEND quote put flowing from Bob (XOF) to Alice (USD
     const outgoingPutBody = usdEndpointStub.getCall(0).args[0].body
     assert.equal(outgoingPutBody['transferDestination'], 'fxp')
   })
+
+  it('sets the transferAmount to 100 USD in the put quote response', async function () {
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'blue-dfsp')
+    const putQuoteRequest: MojaloopHttpRequest = {
+      objectId: quoteId,
+      headers: getHeaders('quotes', 'red-dfsp', 'fxp'),
+      body: getQuotePutMessage('57959', 'XOF', condition, expiry, ilpPacket, 'red-dfsp')
+    }
+
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
+
+    sinon.assert.calledOnce(usdEndpointStub)
+    const outgoingPutBody = usdEndpointStub.getCall(0).args[0].body
+    assert.deepEqual(outgoingPutBody['transferAmount'], {
+      amount: '100',
+      currency: 'USD'
+    })
+  })
+})
+
+describe('FXP receives fixed SEND quote put flowing from Alice (USD) to Bob (XOF)', async function () {
+  beforeEach(async function () {
+    fxp = new App()
+    fxp.start()
+    fxp.addPeer(mowaliUsdPeerInfo, usdEndpoint)
+    fxp.addPeer(mowaliXofPeerInfo, xofEndpoint)
+    xofEndpointStub = sinon.stub(xofEndpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+    usdEndpointStub = sinon.stub(usdEndpoint, 'sendOutgoingRequest').resolves({} as MojaloopHttpReply)
+
+    // set up the required quote post flowing from Alice (USD) to Bob (XOF)
+    const postQuoteRequest: MojaloopHttpRequest = {
+      headers: getHeaders('quotes', 'red-dfsp'),
+      body: getQuotePostMessage('57959', 'XOF', 'SEND', quoteId, 'moja.mowali.usd.alice', 'moja.mowali.xof.bob')
+    }
+    await axios.post(`${serverBaseUrl}/quotes`, postQuoteRequest.body, { headers: postQuoteRequest.headers })
+    assert.isNotNull(fxp.getStoredQuotePostById(quoteId))
+    usdEndpointStub.reset()
+    xofEndpointStub.reset()
+  })
+
+  afterEach(function () {
+    fxp.shutdown()
+    xofEndpointStub.restore()
+    usdEndpointStub.restore()
+  })
+
+  it('sets the fspiop-source to fxp and the destination to red-dfsp', async function () {
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'red-dfsp')
+    const putQuoteRequest: MojaloopHttpRequest = {
+      objectId: quoteId,
+      headers: getHeaders('quotes', 'blue-dfsp', 'fxp'),
+      body: getQuotePutMessage('100', 'USD', condition, expiry, ilpPacket, 'blue-dfsp')
+    }
+
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
+
+    sinon.assert.calledOnce(xofEndpointStub)
+    const outgoingPutHeaders = xofEndpointStub.getCall(0).args[0].headers
+    assert.equal(outgoingPutHeaders['fspiop-source'], 'fxp')
+    assert.equal(outgoingPutHeaders['fspiop-destination'], 'red-dfsp')
+  })
+
+  it('sets the transferDestination to fxp in the put quote response', async function () {
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'red-dfsp')
+    const putQuoteRequest: MojaloopHttpRequest = {
+      objectId: quoteId,
+      headers: getHeaders('quotes', 'blue-dfsp', 'fxp'),
+      body: getQuotePutMessage('100', 'USD', condition, expiry, ilpPacket, 'blue-dfsp')
+    }
+
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
+
+    sinon.assert.calledOnce(xofEndpointStub)
+    const outgoingPutBody = xofEndpointStub.getCall(0).args[0].body
+    assert.equal(outgoingPutBody['transferDestination'], 'fxp')
+  })
+
+  it('sets the transferAmount to 57959 XOF in the put quote response', async function () {
+    assert.equal(fxp.getStoredQuotePostById(quoteId).headers['fspiop-source'], 'red-dfsp')
+    const putQuoteRequest: MojaloopHttpRequest = {
+      objectId: quoteId,
+      headers: getHeaders('quotes', 'blue-dfsp', 'fxp'),
+      body: getQuotePutMessage('100', 'USD', condition, expiry, ilpPacket, 'blue-dfsp')
+    }
+
+    await axios.put(`${serverBaseUrl}/quotes/${quoteId}`, putQuoteRequest.body, { headers: putQuoteRequest.headers })
+
+    sinon.assert.calledOnce(xofEndpointStub)
+    const outgoingPutBody = xofEndpointStub.getCall(0).args[0].body
+    assert.deepEqual(outgoingPutBody['transferAmount'], {
+      amount: '57959',
+      currency: 'XOF'
+    })
+  })
 })
