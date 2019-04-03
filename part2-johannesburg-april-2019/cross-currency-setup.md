@@ -1,4 +1,4 @@
-The following document describes setting up and performing a cross-currency transaction. The demo only supports USD-XOF conversions with a conversion rate that has been fixed @ TODO get from don. It assumes you are familiar with setting up a current Mojaloop hub on a kubernetes cluster using helm.
+The following document describes setting up and performing a cross-currency transaction. The demo only supports USD-XOF conversions with a conversion rate that has been fixed 1 USD = 579.59 XOF. It assumes you are familiar with setting up a current Mojaloop hub on a kubernetes cluster using helm.
 
 A cross-currency setup consists of the following components:
 * Mojaloop Hub
@@ -43,7 +43,8 @@ Once all the services are deployed you can now setup the environment. Setup take
 2. Open Postman and click import
 3. Import the environment variables from `projects/postman/Mojaloop Cross-currency.postman_environment.json`
 4. Import the collection from `projects/postman/Cross Currency.postman_collection.json`
-5. Run the setup folder in the `Cross Currency` collection using the `Mojaloop Cross-currency` environment variables
+5. Edit the `payer_endpoint_prefix` and `payee_endpoint_prefix` in the environment to suit your setup
+6. Run the setup folder in the `Cross Currency` collection using the `Mojaloop Cross-currency` environment variables
 
 Once the setup has been run in postman, the environment will be fully setup to begin performing cross-currency transactions.
 
