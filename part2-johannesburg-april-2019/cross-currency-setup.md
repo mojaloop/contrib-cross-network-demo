@@ -1,5 +1,7 @@
 The following document describes setting up and performing a cross-currency transaction. The demo only supports USD-XOF conversions with a conversion rate that has been fixed 1 USD = 579.59 XOF. It assumes you are familiar with setting up a current Mojaloop hub on a kubernetes cluster using helm.
 
+Details on the POC are provided [here](./cross-currency-poc.md)
+
 A cross-currency setup consists of the following components:
 * Mojaloop Hub
 * Mojaloop Routing Service (1 per currency)
