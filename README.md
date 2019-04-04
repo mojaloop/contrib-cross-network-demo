@@ -40,6 +40,6 @@ In part 2 we will be focusing on in-network cross-currency and preparing our new
 
 We have built a POC of a Mojaloop network that supports these use cases.
 
- * There is a brief [overview](./part2-johannesburg-april-2019/cross-network-poc.md) of the system
- * [Instructions](./part2-johannesburg-april-2019/cross-network-poc.md) for deploying the POC
+ * There is a brief [overview](./part2-johannesburg-april-2019/cross-currency-poc.md) of the system
+ * [Instructions](./part2-johannesburg-april-2019/cross-currency-poc.md) for deploying the POC
 
