@@ -34,6 +34,12 @@ In Arusha we presented a working POC of a cross-network transfer and proposed so
 
 In part 2 we will be focusing on in-network cross-currency and preparing our new components for integration into the main code base. We have also identified further API changes that are required.
 
+ * Description of [Use Cases](./part2-johannesburg-april-2019/use-cases.md) and constraints when using the current API
+ * Proposed changes to [Use Cases](./part2-johannesburg-april-2019/proposal.md) if the API is updated
  * [Proposed API Changes](./part2-johannesburg-april-2019/api-changes.md)
 
+We have built a POC of a Mojaloop network that supports these use cases.
+
+ * There is a brief [overview](./part2-johannesburg-april-2019/cross-network-poc.md) of the system
+ * [Instructions](./part2-johannesburg-april-2019/cross-network-poc.md) for deploying the POC
 
