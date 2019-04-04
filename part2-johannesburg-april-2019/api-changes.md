@@ -22,16 +22,11 @@ However this only allows the sender to filter out payees that would require a cr
 
 The current API assumes that the recipient of a transaction is defined by an instance of `Party` describing the payee entity. (There is an accommodation for a _`partyIdInfo`_ of type `ACCOUNTID`, however there is no way for this to be combined with an identifier of MSISDN. i.e. The payee can't be identified by both their MSISDN and their account.)
 
-The reality is that transactions are addressed to payee **accounts** not the payee entity so it is necessary for the sender to have the ability to direct quotes and transfers to a destination account, discovered during the lookup flow, not just a destination entity (party).
+In the case where the identifier of the account is not universally unique it must be combined with the MSISDN or other payee identifier to provide the necessary granularity required for the payee FSP to route the funds to the correct account or at least accurately respond to quote requests.
 
 ## Privacy
 
 The design of a mechanism for the discovery of accounts, and routing of quotes and payments to those accounts, needs to be done in a privacy preserving manner. It should not be possible during the lookup flow for a sender to discover more information about the receiver than the receiver is prepared to share or than is needed to make the payment.
-
-This can be achieved by:
-  1. Only returning a subset of accounts available for the receiver
-  2. Only returning the set of supported currencies
-  3. Using privacy-preserving account identifiers
 
 ## Proposal
 
@@ -39,7 +34,7 @@ The following updates to the API would facilitate cross-currency quotes and tran
 
 ### Update `Party`
 
-The `Party` data model should be updated to include a new `accounts` data element:
+The `Party` data model should be updated to include a new `addresses` data element:
 
 | Data Element               | Cardinality | Type        | Description     |
 |----------------------------|------------ |-------------|-----------------|
@@ -47,24 +42,24 @@ The `Party` data model should be updated to include a new `accounts` data elemen
 | merchantClassificationCode | 0..1 | `MerchantClassificationCode` | Used in the context of Payee Information, where the Payee happens to be a merchant accepting merchant payments |
 | name                       | 0..1 | `PartyName` | Display name of the Party, could be a real name or a nickname |
 | personalInfo               | 0..1 | `PartyPersonalInfo` | Personal information used to verify identity of Party such as first, middle, last name and date of birth |
-| accounts                   | 0..1 | `AccountList` | A list of accounts that can be the target of transfers sent to the party |
+| addresses                   | 0..1 | `AddressList` | A list of addresses that can be used to route payments to the party |
 
-### Add `AccountList` and `Account` data types
+### Add `AddressList` and `Address` data types
 
-The `AccountList` data model is defined as:
+The `AddressList` data model is defined as:
 
 | Data Element               | Cardinality | Type        | Description                |
 |----------------------------|------------ |-------------|----------------------------|
-| account                    | 1..16       | `Account`   | Number of account elements |
+| address                    | 1..16       | `Address`   | Number of address elements |
 
-The `Account` data model is defined as:
+The `Address` data model is defined as:
 
-| Data Element               | Cardinality | Type             | Description                 |
-|----------------------------|------------ |------------------|-----------------------------|
-| accountAddress             | 0..1        | `AccountAddress` | The address of the account  |
-| accountCurrency            | 1           | `Currency`       | The currency of the account |
+| Data Element        | Cardinality | Type             | Description                 |
+|---------------------|------------ |------------------|-----------------------------|
+| address             | 0..1        | `Address`        | An address of the payee     |
+| currency            | 1           | `Currency`       | The currency of the account |
 
-The `AccountAddress` data type is a variable length string with a maximum size of 1023 characters and consists of:
+The `Address` data type is a variable length string with a maximum size of 1023 characters and consists of:
   - Alphanumeric characters, upper or lower case. (Addresses are case-sensitive so that they can contain data encoded in formats such as base64url.)
   - Underscore (_)
   - Tilde (~)
@@ -72,23 +67,31 @@ The `AccountAddress` data type is a variable length string with a maximum size o
   - Period (.)
 Addresses MUST NOT end in a period (.) character
 
-An entity providing accounts to parties (i.e. a participant) can provide any value for an `AccountAddress` that is **routable** to that entity. It does not need to provide an address that makes the account identifiable outside the entity's domain. i.e. This is an address not an identifier
+An entity providing accounts to parties (i.e. a participant) can provide any value for an `Address` that is **routable** to that entity. It does not need to provide an address that makes the account identifiable outside the entity's domain. i.e. This is an address not an identifier
 
 For example, a participant (Blue DFSP) that controls the address space `moja.blue` might allocate a random UUID to the account and return the value:
 ```json
 {
-  "accountAddress" : "moja.blue.8f027046-b82a-4fa9-838b-70210fcf8137",
-  "accountCurrency" : "ZAR" 
+  "address" : "moja.blue.8f027046-b82a-4fa9-838b-70210fcf8137",
+  "currency" : "ZAR" 
 }
 ```
 _This address is *routable* to Blue DFSP because it uses the prefix `moja.blue`_
 
-The policy for defining addresses and the life-cycle of these is at the discretion of the address space owner (the payee DFSP in this case)
+Blue DFSP may also simply use their own address if that is sufficient (in combination with the remainder of the `PartyIdInfo`) to uniquely identify the payee and the destination account.
+```json
+{
+  "address" : "moja.blue",
+  "currency" : "ZAR" 
+}
+```
 
-### Add the `FSPIOP-Account` header
+_This address is also *routable* to Blue DFSP because it uses the prefix `moja.blue`_
 
-If a sending DFSP has discovered a specific account they wish to target in a quote or transaction they MAY include the `FSPIOP-Account` header in calls to `/quote` and `/transfer`.
+**IMPORTANT**: The policy for defining addresses and the life-cycle of these is at the discretion of the address space owner (the payee DFSP in this case)
 
-The `FSPIOP-Account` header is set by the sender and is not changed by intermediaries if the quote or transfer is routed across networks (in contrast to the `FSPIOP-Destination` and `FSPIOP-Source` headers which are network specific identifiers for a specific network participant.)
+### Use the address in the Party.PartyIdInfo.PartySubIdOrType to assist in multi-hop routing
 
-The `FSPIOP-Account` header is not present in callbacks.
+If a sending DFSP has an address for the payee that they wish to include in a quote request to assist intermediaries in routing the quote they should include this in the `Party.PartyIdInfo.PartySubIdOrType` data element.
+
+Intermediaries that need to route a quote request via FX providers or Cross-network providers/gateways will determine the next hop of the quote request by consulting their internal routing tables using the address as the lookup value.

@@ -91,7 +91,6 @@ This PoC assumes that the result of the account look up process is the moja addr
 * Sets `fspiop-source = dfsp1`
 * Sets `transferCurrency = USD` - specifies that the mone should be taken from Alice's USD account
 * Does not set `fspiop-destination` as it leaves the routing up to the Moja Hub
-* See appendix for full quote request
 
 **Interop-switch-js**
 * Consults the routing service for the participant to send the quote to
@@ -116,15 +115,15 @@ This PoC assumes that the result of the account look up process is the moja addr
 * Sets `fspiop-source = dfsp2`
 * Sets `fspiop-destination = fxp`
 * Sets `transferDestination = dfsp2`
-* Sends the 
+* Sends the quote
 
 **Interop-switch-js**
 * Uses `fspiop-destination` to get FXP's QUOTE_PUT endpoint
 * Sends quote response to FXP
 
 **FXP**
-* Stores the quote response and where it came from in state
-* Retrieves from state where it received the quote request from
+* Stores the quote response and where it came from in local state
+* Retrieves from local state, where it received the quote request from originally
 * Sets `fspiop-destination = dfsp1`
 * Sets `fspiop-source = fxp`
 * Sets `transferDestination = fxp`
@@ -150,9 +149,9 @@ This PoC assumes that the result of the account look up process is the moja addr
 * Sends the transfer request to FXP
 
 **FXP**
-* Stores transfer request in state and where it came from
+* Stores transfer request in local state and where it came from
 * Creates new transfer request (new transferId) and maps it to the received transfer request (old transferId)
-* Uses `quoteId` to retrieve quote response from state and where the quote response came from
+* Uses `quoteId` to retrieve previous quote response from local state and where the quote response came from
 * Sets `fspiop-source = fxp`
 * Sets `fspiop-destination = dfsp2` which is taken from the retrieved quote response
 * Sets `payerFspId = fxp`
@@ -178,7 +177,7 @@ This PoC assumes that the result of the account look up process is the moja addr
 **FXP**
 * Maps the transfer response for the new transferId to the transfer request for the old transferId
 * Sets `fspiop-source = fxp`
-* Sets `fspiop-destination = dfsp1` which is taken from `fspiop-source` in the retrieved tranfer request for the old transferId
+* Sets `fspiop-destination = dfsp1` which is taken from `fspiop-source` in the retrieved transfer request for the old transferId
 * Sends transfer response using old transferId to the interop-switch-js for the Moja Hub
 
 **ML-Api-Adapter via Interop-switch-js**

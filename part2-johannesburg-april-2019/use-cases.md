@@ -69,6 +69,7 @@ FXP sends a quote to Red Mobile (via the switch)
  - `Payee.PartyIdInfo.FspId`: red-mobile
  - `AmountType`: **SEND**
  - `Amount`: **XOF 995**
+ - `TransferCurrency`: XOF
 
 Red Mobile constructs a `Transaction` object with the details of the payer and payee from the quote. This is used to derive the condition and fulfillment.
 
@@ -78,6 +79,7 @@ Red Mobile sends the callback to the FXP (via the switch):
  - Header: `FSPIOP-Source`: red-mobile
  - Header: `FSPIOP-Destination`: fxp
  - `TransferAmount`: **XOF 995**
+ - `TransferDestination`: red-mobile
  - `PayeeReceiveAmount`: XOF 990
  - `PayeeFspFee`: XOF 3
  - `PayeeFspCommission`: XOF 2
@@ -88,6 +90,7 @@ The FXP sends the callback to Blue Mobile (via the switch):
  - Header: `FSPIOP-Source`: **fxp**
  - Header: `FSPIOP-Destination`: blue-mobile
  - `TransferAmount`: **USD 5**
+ - `TransferDestination`: fxp
  - `PayeeReceiveAmount`: XOF 990
  - `PayeeFspFee`: XOF 3
  - `PayeeFspCommission`: XOF 2
@@ -105,7 +108,7 @@ Alice proceeds and a transfer is sent by Blue Mobile to FXP
  - Header: `FSPIOP-Source`: blue-mobile
  - Header: `FSPIOP-Destination`: **fxp**
  - `Amount`: **USD 5**
- - `PayeeFsp`: red-mobile
+ - `PayeeFsp`: fxp
  - `PayerFsp`: blue-mobile
  - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
  - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
@@ -118,7 +121,7 @@ FXP receives the incoming transfer and determines that an outgoing transfer must
  - Header: `FSPIOP-Destination`: red-mobile
  - `Amount`: **XOF 995**
  - `PayeeFsp`: red-mobile
- - `PayerFsp`: blue-mobile
+ - `PayerFsp`: fxp
  - `Condition`: abcdef8uuyiuglwiyuefdouwtfdlwihevfluyf
  - `IlpPacket.Data`: &lt;JSON encoded `Transaction` object&gt;
 
