@@ -53,4 +53,4 @@ Once the setup has been run in postman, the environment will be fully setup to b
 ## Making a Cross-Currency Transaction
 To perform a cross-currency transaction use the `Golden Path` folder in the `Cross Currency` collection. 
 
-*NOTE:* Before running the the last step, `5. Transfer Fulfil Request`, you need to ensure the environment variable `transferId` is updated to reflect the `transferId` of the transfer POST request that was received at DFSP2. This is due to the fact that the transferId is unique between each leg of the transaction. IE `transferId1` for transfer from dfsp1 to fxp and `transferId2` for transfer from fxp to dfsp2
+*NOTE:* Before running the the last step, `6. Transfer Fulfil Request`, you need to ensure the environment variable `transferId` is updated to reflect the `transferId` of the transfer POST request that was received at DFSP2. This is due to the fact that the transferId is unique between each leg of the transaction. IE `transferId1` for transfer from dfsp1 to fxp and `transferId2` for transfer from fxp to dfsp2
