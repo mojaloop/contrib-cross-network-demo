@@ -152,6 +152,7 @@ export class App {
     let destination = ''
     let nextHop = ''
     let outgoingRequest: MojaloopHttpRequest = request
+    outgoingRequest.headers = this._updateRequestHeaders(outgoingRequest, nextHop)
     if (isQuotePostMessage(request.body)) {
       destination = request.body.payee.partyIdInfo.partySubIdOrType || ''
       nextHop = this.routingTable.nextHop(destination)
@@ -184,6 +185,7 @@ export class App {
     } else if (isTransferPutMessage(request.body)) {
       const storedTransferPostRequest = this.mapOutgoingTransferToIncoming(request.objectId!) // TODO: update typing so that don't have to assert objectId is not undefined
       nextHop = storedTransferPostRequest.sourcePeerId
+      outgoingRequest.objectId = storedTransferPostRequest.body.transferId
     }
     const handler = this._outgoingRequestHandlers.get(nextHop)
 
@@ -191,8 +193,6 @@ export class App {
       logger.error('Handler not found for specified nextHop=', nextHop)
       throw new Error(`No handler set for ${nextHop}`)
     }
-
-    outgoingRequest.headers = this._updateRequestHeaders(outgoingRequest, nextHop)
 
     logger.debug('sending outgoing Packet', { destination, nextHop, headers: outgoingRequest.headers })
 

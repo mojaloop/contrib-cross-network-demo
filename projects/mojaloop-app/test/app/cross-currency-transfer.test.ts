@@ -228,6 +228,20 @@ describe('FXP receives transfer put flowing from Bob to Alice (USD to XOF)', fun
     
     assert.equal(outgoingPostBody['transferState'], 'ABORTED')
   })
+
+  it('updates the transferId to the one in the received transfer request', async function () {
+    const putTransferRequest: MojaloopHttpRequest = {
+      objectId: newTransferId,
+      headers: getHeaders('transfers', 'red-dfsp', 'fxp'),
+      body: getTransferPutMessage('ABORTED')
+    }
+
+    await axios.put(`${serverBaseUrl}/transfers/${newTransferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
+
+    sinon.assert.calledOnce(usdEndpointStub)
+    const outgoingPost = usdEndpointStub.getCall(0).args[0]
+    assert.equal(outgoingPost['objectId'], transferId)
+  })
 })
 
 describe('FXP receives transfer post flowing from Bob to Alice (XOF to USD)', function () {
@@ -398,5 +412,20 @@ describe('FXP receives transfer put flowing from Alice to Bob (XOF to USD)', fun
     const outgoingPostBody = xofEndpointStub.getCall(0).args[0].body
     
     assert.equal(outgoingPostBody['transferState'], 'ABORTED')
+  })
+
+  it('updates the transferId to the one in the received transfer request', async function () {
+    const putTransferRequest: MojaloopHttpRequest = {
+      objectId: newTransferId,
+      headers: getHeaders('transfers', 'blue-dfsp', 'fxp'),
+      body: getTransferPutMessage('ABORTED')
+    }
+
+    await axios.put(`${serverBaseUrl}/transfers/${newTransferId}`, putTransferRequest.body, { headers: putTransferRequest.headers })
+
+    sinon.assert.calledOnce(xofEndpointStub)
+    const outgoingPost = xofEndpointStub.getCall(0).args[0]
+    
+    assert.equal(outgoingPost['objectId'], transferId)
   })
 })
